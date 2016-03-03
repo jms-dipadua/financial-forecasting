@@ -46,6 +46,9 @@ class Calendar:
 
 	def create_dates(self, day, month, year, days_in_month, periodicity):
 		date_array = []
+		day = int(day)
+		month = int(month)
+		year = int(year)
 		# put the first date into the array
 		date = str(month) +'/'+ str(day) + '/' + str(year)
 		date_array.append(date)
@@ -87,6 +90,8 @@ class Source:
 				merge_dataframe = self.raw_data_merge
 			# with a "cleanish" dataframe in hand, merge the data
 			self.merge_data(merge_dataframe)
+
+			print self.dataframe.shape
 
 		self.write_finished_file()
 
@@ -162,8 +167,7 @@ class Source:
 			self.dataframe = self.raw_data_base
 	
 	def merge_data(self, merge_dataframe): 
-		self.dataframe = self.dataframe.merge(merge_dataframe, how='inner', on='Date')
-		
+		self.dataframe = self.dataframe.merge(merge_dataframe, how='inner', on='Date')	
 
 	def expand_raw_merge_data(self, periodicity): 
 		dates = self.raw_data_merge['Date']
@@ -181,7 +185,7 @@ class Source:
 			date_value = tmp_df.iloc[0][tmp_df_cols[1:]] # the value of that specific date  # <- THIS IS WHERE YOU CAN NAB THE FULL DATA SET...RATHER THAN JUST ONE COL
 			#print "%r %r %r" % (day, month, year)
 			days_in_month = self.calendar.max_days_in_month(month)
-			if month == 2 and self.calendar.is_leap_yr(year) == True: # annoying control for leap years
+			if (month == 2 and self.calendar.is_leap_yr(year) == True): # annoying control for leap years
 				days_in_month += 1
 			new_dates = self.calendar.create_dates(day, month, year, days_in_month, periodicity)
 			# new_dates is an array
