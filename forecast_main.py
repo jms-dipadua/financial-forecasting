@@ -27,8 +27,8 @@ class Company:
 	def get_params(self):
 		print "welcome to the jungle."
 		self.base_file = raw_input("RAW COMPANY file:   ") # base file
-		self.root_dir = 'data/working/v3/'  # version directory
-		self.fin_dir = 'data/outputs/v3/' # version directory
+		self.root_dir = 'data/working/v4/'  # version directory
+		self.fin_dir = 'data/outputs/v4/' # version directory
 		self.experiment_version = raw_input("Experiment Version:    ")
 		self.fin_file_name = self.fin_dir + self.experiment_version +'.csv' # --> USE THE ROOT EXP FOR FILES? OR JUST ONE OUPUT?
 		self.pl_file_name = self.fin_dir + self.experiment_version +'_pl.csv'
@@ -110,8 +110,7 @@ class Company:
 class Forecast:
 	def __init__(self):
 		self.company = Company()
-		self.basic_vis()
-		exit()
+		#self.basic_vis()
 		self.pre_process_data() #v1.x-ish: scaling, PCA, etc
 		self.svm() # uses self.company.X_train/test, etc
 		self.ann() # uses self.company.X_train/test, etc
@@ -120,7 +119,7 @@ class Forecast:
 		self.ann_decisions, self.ann_gain_loss = self.decisions(self.ann_preds) # this has to ouptut // generate a notion of "shares held"
 		self.buy_hold_prof_loss()		
 		self.profit_loss_rollup()
-		#self.write_final_file()
+		self.write_final_file()
 
 	def pre_process_data(self):
 		# some STRUCTURE and CLEAN UP 
@@ -177,12 +176,12 @@ class Forecast:
 		self.reg_score = regress_fit.score(self.company.X_cv, self.company.y_cv)
 		#self.reg_score = mean_absolute_error(self.company.y_valid, self.svm_preds)
 		print self.reg_score
-
+		"""
 		# visualize results 
 		plt.scatter(self.company.X_test[:, 3], self.company.y_test, color="k")
 		plt.plot(self.company.X_test[:, 3], self.svm_preds, color='b')
 		plt.show()
-		
+		"""
 		return
 
 	def ann(self):
@@ -199,11 +198,11 @@ class Forecast:
 
 		sgd = SGD(lr=0.3, decay=1e-6, momentum=0.9, nesterov=True)
 		model.compile(loss='mean_squared_error', optimizer='sgd')
-		early_stopping = EarlyStopping(monitor='val_loss', patience=5)
+		early_stopping = EarlyStopping(monitor='val_loss', patience=70)
 		#epoch_score = model.evaluate(X_score, y_score, batch_size = 16) # this doesn't work
 		# first model
 		print "fitting first model"
-		model.fit(self.company.X_train, self.company.y_train, nb_epoch=100, validation_split=.1, batch_size=16, verbose = 1, show_accuracy = True, shuffle = False, callbacks=[early_stopping])
+		model.fit(self.company.X_train, self.company.y_train, nb_epoch=500, validation_split=.1, batch_size=16, verbose = 1, show_accuracy = True, shuffle = False, callbacks=[early_stopping])
 		#score = model.evaluate(self.company.X_cv, self.company.y_cv, show_accuracy=True, batch_size=16)
 		self.ann_preds = model.predict(self.company.X_test)
 		#print self.ann_preds
@@ -286,6 +285,7 @@ class Forecast:
 	def profit_loss_rollup(self):
 		# could output something like shares purchased / sold, cost basis & exit-price
 		# for now just a single line
+		
 		columns = ["Profit/Loss"]
 		index = ["BUY-HOLD", "SVM", "ANN"]
 		self.profit_df = [self.bh_pl, np.sum(self.svm_gain_loss), np.sum(self.ann_gain_loss)]
@@ -318,7 +318,7 @@ class Forecast:
 		#print self.final_df.shape
 		self.final_df = pd.DataFrame(self.final_df, columns=columns)
 		final_file = self.final_df.to_csv(self.company.fin_file_name,index_label='id')
-		pl_fin_file = self.profit_df.to_csv(self.company.pl_file_name)
+		#pl_fin_file = self.profit_df.to_csv(self.company.pl_file_name)
 		return
 
 
