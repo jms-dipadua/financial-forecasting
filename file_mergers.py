@@ -95,7 +95,9 @@ class Source:
 		self.base_file = raw_input("BASE file:   ") # base file
 		#self.base_file_period = int(raw_input("period of original file: 1 == daily, 2 == weekly, 3 == monthly, 4 == quarterly")) # base file
 		
-		#financials_file = raw_input("MERGE file name (NO ROOT):   ") # financials file (earnings, etc) 
+		#financials_file = raw_input("MERGE file name, NO directory:   ") # financials file (earnings, etc) 
+		company_ticker = raw_input("Company Ticker:  ")
+		financials_file = "financials/fundamentals-"+company_ticker+".csv"
 
 		self.merge_files = [
 			'10-yr-tres.csv',
@@ -114,6 +116,7 @@ class Source:
 			'sp500.csv',
 			'usd-euro.csv'
 		]
+		self.merge_files.append(financials_file)
 		self.merge_f_dict = {
 			# 1: daily, 7: weekly, 31: monthly, 91: quarterly, 365: annual
 			# we assign the numbers like this because we're going to use them later...saves a conversion step
@@ -131,12 +134,13 @@ class Source:
 			'real-gdp.csv': 91,
 			'real-median-hh-income.csv': 365,
 			'sp500.csv': 1,
-			'usd-euro.csv': 1
+			'usd-euro.csv': 1,
+			financials_file: 91
 		}
-		#self.merge_files.append(financials_file)
+		
 
-		self.root_base = 'data/transformed/v3/' # this is where we'll version things
-		self.root_merge = 'data/fundamentals/v3/'
+		self.root_base = 'data/transformed/v4/' # this is where we'll version things
+		self.root_merge = 'data/fundamentals/v4/'
 
 		self.fin_file_name = raw_input("Name for Final File:    ")
 		self.fin_file_name = 'data/working/v3/' + self.fin_file_name
@@ -201,7 +205,7 @@ class Source:
 			tmp_df = self.raw_data_merge.loc[self.raw_data_merge['Date'] == date] # dataframe row
 			tmp_df_cols = list(tmp_df.columns.values) # column headers, also used below
 			#print tmp_df_cols
-			date_value = tmp_df.iloc[0][tmp_df_cols[1]] # the value of that specific date  # <- THIS IS WHERE YOU CAN NAB THE FULL DATA SET...RATHER THAN JUST ONE COL
+			date_value = tmp_df.iloc[0][tmp_df_cols[1:]] # the value of that specific date  # <- THIS IS WHERE YOU CAN NAB THE FULL DATA SET...RATHER THAN JUST ONE COL
 			#print date_value
 			#print "%r %r %r" % (day, month, year)
 			days_in_month = self.calendar.max_days_in_month(month)
