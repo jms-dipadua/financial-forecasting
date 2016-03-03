@@ -153,9 +153,6 @@ class Source:
 			self.raw_data_base = pd.read_csv(self.root_base+file_name, dtype = str)
 		elif f_type == 2:
 			self.raw_data_merge = pd.read_csv(self.root_merge+file_name, dtype = str)
-
-		if file_name == self.financials_file:
-			print list(self.raw_data_merge.columns.values)
     
 	def initial_data_drop(self):
 		columns = list(self.raw_data_base.columns.values)
@@ -165,35 +162,8 @@ class Source:
 			self.dataframe = self.raw_data_base
 	
 	def merge_data(self, merge_dataframe): 
-		dates = self.raw_data_base['Date']
-		merge_data_cols = list(merge_dataframe.columns.values) # get all columns
-		print merge_data_cols
-		keep_cols = merge_data_cols[1:]  # get the ones we want to keep
-		print keep_cols
-		num_dates = self.raw_data_base.shape[0] # for the range of dates we're going to loop through
-		tmp_np_array = np.empty([num_dates, len(keep_cols)]) # temporary numpy array for holding to-merge data 
-		for i in range(0, num_dates):
-			date = dates[i]
-			try:
-				tmp_df = merge_dataframe.loc[merge_dataframe['Date'] == date]
-				#print tmp_df.iloc[0, 1:]
-				tmp_np_array[i,:] = tmp_df.iloc[[0], 1:]
-				if i == 10:
-					print tmp_np_array[i]
-				#raw_input("press enter")
-			except:
-				# THIS SHOULDN'T HAPPEN
-				# but if it does, we'll use the LAST entry as the data value
-				# will SORT-of prevent gaps in data...
-				#print "Date (%r) not found." % date
-				tmp_np_array[i,:] = tmp_np_array[i-1,:] #np.zeros([1,len(keep_cols)])
-				#print tmp_np_array[i]
-				#raw_input("press enter")
-		# append the new column of data into the main dataframe
-		for j in range(0, len(keep_cols)):
-			self.dataframe[keep_cols[j]] = tmp_np_array[:,j]
-		# update the list of columns in the final column list
-		self.final_columns.append(keep_cols)
+		self.dataframe = self.dataframe.merge(merge_dataframe, how='inner', on='Date')
+		
 
 	def expand_raw_merge_data(self, periodicity): 
 		dates = self.raw_data_merge['Date']
