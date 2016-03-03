@@ -196,12 +196,12 @@ class Source:
 		#print tmp_m_df
 		for date in dates:
 			#print date
-			day, month, year = self.calendar.split_dates(date)
+			day, month, year = self.calendar.split_dates(date)  # <-- need a way to get the "previous day" so that you can fix the information leak 
 			# get the original date from the merge data frame (to get its "cell" value)
 			tmp_df = self.raw_data_merge.loc[self.raw_data_merge['Date'] == date] # dataframe row
 			tmp_df_cols = list(tmp_df.columns.values) # column headers, also used below
 			#print tmp_df_cols
-			date_value = tmp_df.iloc[0][tmp_df_cols[1]] # the value of that specific date
+			date_value = tmp_df.iloc[0][tmp_df_cols[1]] # the value of that specific date  # <- THIS IS WHERE YOU CAN NAB THE FULL DATA SET...RATHER THAN JUST ONE COL
 			#print date_value
 			#print "%r %r %r" % (day, month, year)
 			days_in_month = self.calendar.max_days_in_month(month)
