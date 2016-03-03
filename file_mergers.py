@@ -69,7 +69,7 @@ class Source:
 		self.calendar = Calendar() # we'll use this generic calendar as a look-up helper class
 		self.get_params()
 		self.read_file(self.base_file, 1) # base file
-		self.initial_data_drop()
+		self.initial_data_drop() # i.e. drop IDs from df
 		# in drop, we create self.dataframe which is our final dataframe
 		self.final_columns = list(self.dataframe.columns.values)
 
@@ -97,7 +97,7 @@ class Source:
 		
 		#financials_file = raw_input("MERGE file name, NO directory:   ") # financials file (earnings, etc) 
 		company_ticker = raw_input("Company Ticker:  ")
-		financials_file = "financials/fundamentals-"+company_ticker+".csv"
+		self.financials_file = "financials/financials-"+company_ticker+".csv"
 
 		self.merge_files = [
 			'10-yr-tres.csv',
@@ -116,7 +116,7 @@ class Source:
 			'sp500.csv',
 			'usd-euro.csv'
 		]
-		self.merge_files.append(financials_file)
+		self.merge_files.append(self.financials_file)
 		self.merge_f_dict = {
 			# 1: daily, 7: weekly, 31: monthly, 91: quarterly, 365: annual
 			# we assign the numbers like this because we're going to use them later...saves a conversion step
@@ -135,7 +135,7 @@ class Source:
 			'real-median-hh-income.csv': 365,
 			'sp500.csv': 1,
 			'usd-euro.csv': 1,
-			financials_file: 91
+			self.financials_file: 91
 		}
 		
 
@@ -143,7 +143,7 @@ class Source:
 		self.root_merge = 'data/fundamentals/v4/'
 
 		self.fin_file_name = raw_input("Name for Final File:    ")
-		self.fin_file_name = 'data/working/v3/' + self.fin_file_name
+		self.fin_file_name = 'data/working/v4/' + self.fin_file_name
 
 	def read_file(self, file_name, f_type):
     	# TYPE: base (1) vs merge (2)
@@ -153,6 +153,9 @@ class Source:
 			self.raw_data_base = pd.read_csv(self.root_base+file_name, dtype = str)
 		elif f_type == 2:
 			self.raw_data_merge = pd.read_csv(self.root_merge+file_name, dtype = str)
+
+		if file_name == self.financials_file:
+			print list(self.raw_data_merge.columns.values)
     
 	def initial_data_drop(self):
 		columns = list(self.raw_data_base.columns.values)
@@ -174,8 +177,9 @@ class Source:
 			try:
 				tmp_df = merge_dataframe.loc[merge_dataframe['Date'] == date]
 				#print tmp_df.iloc[0, 1:]
-				tmp_np_array[i,:] = tmp_df.iloc[0, 1:]
-				#print tmp_np_array[i]
+				tmp_np_array[i,:] = tmp_df.iloc[[0], 1:]
+				if i == 10:
+					print tmp_np_array[i]
 				#raw_input("press enter")
 			except:
 				# THIS SHOULDN'T HAPPEN
@@ -197,7 +201,6 @@ class Source:
 		# then, later, make into np.arrays and then create a dataframe with
 		all_dates = []
 		all_date_vals = []
-		#print tmp_m_df
 		for date in dates:
 			#print date
 			day, month, year = self.calendar.split_dates(date)  # <-- need a way to get the "previous day" so that you can fix the information leak 
@@ -206,7 +209,6 @@ class Source:
 			tmp_df_cols = list(tmp_df.columns.values) # column headers, also used below
 			#print tmp_df_cols
 			date_value = tmp_df.iloc[0][tmp_df_cols[1:]] # the value of that specific date  # <- THIS IS WHERE YOU CAN NAB THE FULL DATA SET...RATHER THAN JUST ONE COL
-			#print date_value
 			#print "%r %r %r" % (day, month, year)
 			days_in_month = self.calendar.max_days_in_month(month)
 			if month == 2 and self.calendar.is_leap_yr(year) == True: # annoying control for leap years
@@ -218,10 +220,14 @@ class Source:
 				all_date_vals.append(date_value)
 				all_dates.append(nd)
 		# then make a dataframe with all this stuff 
-		new_merge_df = pd.DataFrame({
-			tmp_df_cols[0]: pd.Series(all_dates),
-			tmp_df_cols[1]: pd.Series(all_date_vals)
-			})
+		all_dates = np.array([all_dates]) # this will make a row vector 
+		# we transpose to get the column vector
+		all_dates = np.transpose(all_dates)
+		all_date_vals = np.array(all_date_vals)
+		#print all_dates.shape
+		#print all_date_vals.shape
+		merged_dates_date_vals = np.hstack((all_dates, all_date_vals))
+		new_merge_df = pd.DataFrame(merged_dates_date_vals, columns = tmp_df_cols)
 		#print new_merge_df
 		# return it to the calling function
 		return new_merge_df
