@@ -321,6 +321,5 @@ class Forecast:
 		#pl_fin_file = self.profit_df.to_csv(self.company.pl_file_name)
 		return
 
-
 if __name__ == "__main__":
 	forecast = Forecast() 

@@ -168,7 +168,7 @@ class Source:
 	
 	def merge_data(self, merge_dataframe): 
 		self.dataframe = self.dataframe.merge(merge_dataframe, how='inner', on='Date')	
-		self.dataframe.drop_duplicates(subset='Date', keep='first', inplace=True)
+		self.dataframe.drop_duplicates(subset='Date', keep='last', inplace=True)
 
 	def expand_raw_merge_data(self, periodicity): 
 		dates = self.raw_data_merge['Date']
