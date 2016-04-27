@@ -110,18 +110,18 @@ class Source:
 			'civil-labor-part-rate.csv',
 			'civil-unemployment-rate.csv',
 			'cpi.csv',
-			'fed-debt-to-GDP.csv',
+			#'fed-debt-to-GDP.csv',
 			'housing-start.csv',
 			'initial-claims.csv',
 			'libor.csv',
 			'personal-consumption-expend.csv',
-			'personal-savings-rate.csv',
-			'real-gdp.csv',
+			#'personal-savings-rate.csv',
+			#'real-gdp.csv',
 			#'real-median-hh-income.csv',  # this is pending 2015 release!! 
 			'sp500.csv',
 			'usd-euro.csv'
 		]
-		self.merge_files.append(self.financials_file)
+		#self.merge_files.append(self.financials_file)
 		self.merge_f_dict = {
 			# 1: daily, 7: weekly, 31: monthly, 91: quarterly, 365: annual
 			# we assign the numbers like this because we're going to use them later...saves a conversion step
