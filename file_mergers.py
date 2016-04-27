@@ -117,8 +117,8 @@ class Source:
 			'personal-consumption-expend.csv',
 			'personal-savings-rate.csv',
 			'real-gdp.csv',
-			#'real-median-hh-income.csv',
-			#'sp500.csv',
+			#'real-median-hh-income.csv',  # this is pending 2015 release!! 
+			'sp500.csv',
 			'usd-euro.csv'
 		]
 		self.merge_files.append(self.financials_file)
@@ -137,7 +137,7 @@ class Source:
 			'personal-consumption-expend.csv': 31,
 			'personal-savings-rate.csv': 31,
 			'real-gdp.csv': 91,
-			'real-median-hh-income.csv': 365,
+			'real-median-hh-income.csv': 365,  
 			'sp500.csv': 1,
 			'usd-euro.csv': 1,
 			self.financials_file: 91
