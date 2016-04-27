@@ -118,7 +118,7 @@ class Source:
 			'personal-savings-rate.csv',
 			'real-gdp.csv',
 			'real-median-hh-income.csv',
-			'sp500.csv',
+			#'sp500.csv',
 			'usd-euro.csv'
 		]
 		self.merge_files.append(self.financials_file)
