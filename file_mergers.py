@@ -110,45 +110,45 @@ class Source:
 			'civil-labor-part-rate.csv',
 			'civil-unemployment-rate.csv',
 			'cpi.csv',
-			#'fed-debt-to-GDP.csv',
+			'fed-debt-to-GDP.csv',
 			'housing-start.csv',
 			'initial-claims.csv',
 			'libor.csv',
 			'personal-consumption-expend.csv',
-			#'personal-savings-rate.csv',
-			#'real-gdp.csv',
+			'personal-savings-rate.csv',
+			'real-gdp.csv',
 			#'real-median-hh-income.csv',  # this is pending 2015 release!! 
 			'sp500.csv',
 			'usd-euro.csv'
 		]
-		#self.merge_files.append(self.financials_file)
+		self.merge_files.append(self.financials_file)
 		self.merge_f_dict = {
 			# 1: daily, 7: weekly, 31: monthly, 91: quarterly, 365: annual
 			# we assign the numbers like this because we're going to use them later...saves a conversion step
 			'10-yr-tres.csv': 1,
 			'brent.csv': 1,
-			'civil-labor-part-rate.csv': 31,
-			'civil-unemployment-rate.csv': 31,
-			'cpi.csv':31,
-			'fed-debt-to-GDP.csv':91,
-			'housing-start.csv': 31,
-			'initial-claims.csv': 7,
+			'civil-labor-part-rate.csv': 32,
+			'civil-unemployment-rate.csv': 32,
+			'cpi.csv':32,
+			'fed-debt-to-GDP.csv':93,
+			'housing-start.csv': 32,
+			'initial-claims.csv': 8,
 			'libor.csv':1,
-			'personal-consumption-expend.csv': 31,
-			'personal-savings-rate.csv': 31,
-			'real-gdp.csv': 91,
+			'personal-consumption-expend.csv': 32,
+			'personal-savings-rate.csv': 32,
+			'real-gdp.csv': 93,
 			'real-median-hh-income.csv': 365,  
 			'sp500.csv': 1,
 			'usd-euro.csv': 1,
-			self.financials_file: 91
+			self.financials_file: 93
 		}
 		
 
-		self.root_base = 'data/transformed/v4/' # this is where we'll version things
-		self.root_merge = 'data/fundamentals/v4/'
+		self.root_base = 'data/transformed/v4-b/' # this is where we'll version things
+		self.root_merge = 'data/fundamentals/v4-b/'
 
 		self.fin_file_name = raw_input("Name for Final File:    ")
-		self.fin_file_name = 'data/working/v4/' + self.fin_file_name
+		self.fin_file_name = 'data/working/v4-b/' + self.fin_file_name
 
 	def read_file(self, file_name, f_type):
     	# TYPE: base (1) vs merge (2)
@@ -199,8 +199,8 @@ class Source:
 		# we transpose to get the column vector
 		all_dates = np.transpose(all_dates)
 		all_date_vals = np.array(all_date_vals)
-		#print all_dates.shape
-		#print all_date_vals.shape
+		print all_dates.shape
+		print all_date_vals.shape
 		merged_dates_date_vals = np.hstack((all_dates, all_date_vals))
 		new_merge_df = pd.DataFrame(merged_dates_date_vals, columns = tmp_df_cols)
 		#print new_merge_df
