@@ -115,10 +115,10 @@ class Forecast:
 		#self.basic_vis()
 		self.pre_process_data() #v1.x-ish: scaling, PCA, etc
 		self.svm() # uses self.company.X_train/test, etc
-		#self.ann() # uses self.company.X_train/test, etc
+		self.ann() # uses self.company.X_train/test, etc
 		# self.ensemble()  # v1.x
 		self.svm_decisions, self.svm_gain_loss = self.decisions(self.svm_preds) # this has to ouptut // generate a notion of "shares held"
-		#self.ann_decisions, self.ann_gain_loss = self.decisions(self.ann_preds) # this has to ouptut // generate a notion of "shares held"
+		self.ann_decisions, self.ann_gain_loss = self.decisions(self.ann_preds) # this has to ouptut // generate a notion of "shares held"
 		self.buy_hold_prof_loss()		
 		self.profit_loss_rollup()
 		self.write_final_file()
