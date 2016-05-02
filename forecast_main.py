@@ -27,8 +27,8 @@ class Company:
 	def get_params(self):
 		print "welcome to the jungle."
 		self.base_file = raw_input("RAW COMPANY file:   ") # base file
-		self.root_dir = 'data/working/v4b/'  # version directory
-		self.fin_dir = 'data/outputs/v4b/' # version directory
+		self.root_dir = 'data/working/v4-b/'  # version directory
+		self.fin_dir = 'data/outputs/v4-b/' # version directory
 		self.experiment_version = raw_input("Experiment Version:    ")
 		self.fin_file_name = self.fin_dir + self.experiment_version +'.csv' # --> USE THE ROOT EXP FOR FILES? OR JUST ONE OUPUT?
 		self.pl_file_name = self.fin_dir + self.experiment_version +'_pl.csv'
