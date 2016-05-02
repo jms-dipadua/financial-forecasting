@@ -9,6 +9,8 @@ from sklearn.metrics import f1_score, accuracy_score, mean_absolute_error
 from sklearn.preprocessing import StandardScaler
 from sklearn.cross_validation import train_test_split, StratifiedKFold, KFold
 from sklearn.learning_curve import learning_curve
+from sklearn.grid_search import GridSearchCV
+
 
 from keras.models import Sequential
 from keras.layers.core import Dense, Activation, Dropout, Flatten
@@ -166,9 +168,7 @@ class Forecast:
 		#print C_range
 		gamma_range = np.logspace(-9, 3, 2)
 		#print gamma_range
-		param_grid = dict(gamma=gamma_range, C=C_range)
-		cv = ShuffleSplit(len(self.y_train), n_iter=5, test_size=0.2, random_state=42)
-		grid = GridSearchCV(SVR(verbose=True), param_grid=param_grid, cv=cv)
+		grid = GridSearchCV(SVR(verbose=True), param_grid=param_grid, cv=None)
 		#grid = GridSearchCV(svm.SVR(kernel='rbf', verbose=True), param_grid=param_grid, cv=cv)
 		grid.fit(self.search_inputs.X_train, self.search_inputs.y_train)
 
