@@ -175,6 +175,9 @@ class Forecast:
 		print("The best parameters are %s with a score of %0.2f"
 			% (grid.best_params_, grid.best_score_))
 
+		self.svm_C = raw_input("input C val")
+		self.svm_gamma = raw_input("input gamma val")
+		regression = SVR(kernel='rbf', C=self.svm_C, gamma=self.svm_gamma, verbose=True)
 		self.svm_preds = grid.predict(self.X_test)
 		#print self.company.X_train.shape
 		#print self.company.y_train.shape
@@ -241,8 +244,6 @@ class Forecast:
 		for i in range(0,num_preds):
 			# SETUP
 			# the actual close value
-			print i
-			print self.company.y_test[i]
 			actual_close = round(self.company.y_test[i],3)
 			# the previous close, pulled from y_train (for first row of x) and y_test
 			if i == 0:
