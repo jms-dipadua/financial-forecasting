@@ -162,7 +162,20 @@ class Forecast:
 
 	def svm(self):
 		# for regression problems, scikitlearn uses SVR: support vector regression
-		regression = svm.SVR(kernel='poly', C=100, gamma=0.1, verbose=True)
+		C_range = np.logspace(-2, 10, 2)
+		#print C_range
+		gamma_range = np.logspace(-9, 3, 2)
+		#print gamma_range
+		param_grid = dict(gamma=gamma_range, C=C_range)
+		cv = ShuffleSplit(len(self.y_train), n_iter=5, test_size=0.2, random_state=42)
+		grid = GridSearchCV(SVR(verbose=True), param_grid=param_grid, cv=cv)
+		#grid = GridSearchCV(svm.SVR(kernel='rbf', verbose=True), param_grid=param_grid, cv=cv)
+		grid.fit(self.search_inputs.X_train, self.search_inputs.y_train)
+
+		print("The best parameters are %s with a score of %0.2f"
+			% (grid.best_params_, grid.best_score_))
+
+		self.svm_preds = grid.predict(self.search_inputs.X_test)
 		#print self.company.X_train.shape
 		#print self.company.y_train.shape
 		#print self.company.y_train[0:,0]
