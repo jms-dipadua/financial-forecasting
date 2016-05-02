@@ -115,10 +115,10 @@ class Forecast:
 		#self.basic_vis()
 		self.pre_process_data() #v1.x-ish: scaling, PCA, etc
 		self.svm() # uses self.company.X_train/test, etc
-		self.ann() # uses self.company.X_train/test, etc
+		#self.ann() # uses self.company.X_train/test, etc
 		# self.ensemble()  # v1.x
 		self.svm_decisions, self.svm_gain_loss = self.decisions(self.svm_preds) # this has to ouptut // generate a notion of "shares held"
-		self.ann_decisions, self.ann_gain_loss = self.decisions(self.ann_preds) # this has to ouptut // generate a notion of "shares held"
+		#self.ann_decisions, self.ann_gain_loss = self.decisions(self.ann_preds) # this has to ouptut // generate a notion of "shares held"
 		self.buy_hold_prof_loss()		
 		self.profit_loss_rollup()
 		self.write_final_file()
@@ -233,11 +233,16 @@ class Forecast:
 		gain_loss = []
 		num_preds = predictions.shape[0]
 
+		#print "total number of predictions: %f"  % num_preds
+		#print "shape of y_test: %f  "  % self.company.y_test.shape
+
 		# loop through each prediction and make a purchase decision
 		# uses for-i loop because i want to use the int for indexing within
-		for i in range(0,num_preds - 1):
+		for i in range(0,num_preds):
 			# SETUP
 			# the actual close value
+			print i
+			print self.company.y_test[i]
 			actual_close = round(self.company.y_test[i],3)
 			# the previous close, pulled from y_train (for first row of x) and y_test
 			if i == 0:
