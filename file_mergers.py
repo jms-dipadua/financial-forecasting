@@ -132,7 +132,7 @@ class Source:
 			'cpi.csv':32,
 			'fed-debt-to-GDP.csv':93,
 			'housing-start.csv': 32,
-			'initial-claims.csv': 8,
+			'initial-claims.csv': 7,
 			'libor.csv':1,
 			'personal-consumption-expend.csv': 32,
 			'personal-savings-rate.csv': 32,
