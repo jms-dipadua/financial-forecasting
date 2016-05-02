@@ -181,9 +181,6 @@ class Forecast:
 		#print self.company.y_train[0:,0]
 		#print self.company.X_test.shape
 
-		# SVM fit 
-		regress_fit = regression.fit(self.company.X_train, self.company.y_train)
-		self.svm_preds = regress_fit.predict(self.company.X_test)
 		#print self.svm_preds
 		
 		self.reg_score = regress_fit.score(self.company.X_cv, self.company.y_cv)
