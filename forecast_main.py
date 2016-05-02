@@ -115,10 +115,10 @@ class Forecast:
 		#self.basic_vis()
 		self.pre_process_data() #v1.x-ish: scaling, PCA, etc
 		self.svm() # uses self.company.X_train/test, etc
-		self.ann() # uses self.company.X_train/test, etc
+		#self.ann() # uses self.company.X_train/test, etc
 		# self.ensemble()  # v1.x
 		self.svm_decisions, self.svm_gain_loss = self.decisions(self.svm_preds) # this has to ouptut // generate a notion of "shares held"
-		self.ann_decisions, self.ann_gain_loss = self.decisions(self.ann_preds) # this has to ouptut // generate a notion of "shares held"
+		#self.ann_decisions, self.ann_gain_loss = self.decisions(self.ann_preds) # this has to ouptut // generate a notion of "shares held"
 		self.buy_hold_prof_loss()		
 		self.profit_loss_rollup()
 		self.write_final_file()
@@ -168,14 +168,14 @@ class Forecast:
 		#print C_range
 		gamma_range = np.logspace(-9, 3, 2)
 		#print gamma_range
-		grid = GridSearchCV(SVR(verbose=True), param_grid=param_grid, cv=None)
-		#grid = GridSearchCV(svm.SVR(kernel='rbf', verbose=True), param_grid=param_grid, cv=cv)
-		grid.fit(self.search_inputs.X_train, self.search_inputs.y_train)
+		param_grid = dict(gamma=gamma_range, C=C_range)
+		grid = GridSearchCV(svm.SVR(verbose=True), param_grid=param_grid, cv=None)
+		grid.fit(self.X_train, self.y_train)
 
 		print("The best parameters are %s with a score of %0.2f"
 			% (grid.best_params_, grid.best_score_))
 
-		self.svm_preds = grid.predict(self.search_inputs.X_test)
+		self.svm_preds = grid.predict(self.X_test)
 		#print self.company.X_train.shape
 		#print self.company.y_train.shape
 		#print self.company.y_train[0:,0]
@@ -183,7 +183,7 @@ class Forecast:
 
 		#print self.svm_preds
 		
-		self.reg_score = regress_fit.score(self.company.X_cv, self.company.y_cv)
+		self.reg_score = grid.score(self.company.X_cv, self.company.y_cv)
 		#self.reg_score = mean_absolute_error(self.company.y_valid, self.svm_preds)
 		print self.reg_score
 		"""
@@ -235,7 +235,7 @@ class Forecast:
 
 		# loop through each prediction and make a purchase decision
 		# uses for-i loop because i want to use the int for indexing within
-		for i in range(0,num_preds):
+		for i in range(0,num_preds - 1):
 			# SETUP
 			# the actual close value
 			actual_close = round(self.company.y_test[i],3)
