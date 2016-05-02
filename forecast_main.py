@@ -197,7 +197,7 @@ class Forecast:
 		model.add(Activation("linear"))
 
 		sgd = SGD(lr=0.3, decay=1e-6, momentum=0.9, nesterov=True)
-		model.compile(loss='mean_squared_error', optimizer='sgd')
+		model.compile(loss='mean_squared_error', optimizer='rmsprop')
 		early_stopping = EarlyStopping(monitor='val_loss', patience=70)
 		#epoch_score = model.evaluate(X_score, y_score, batch_size = 16) # this doesn't work
 		# first model
