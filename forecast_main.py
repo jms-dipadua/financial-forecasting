@@ -203,10 +203,10 @@ class Forecast:
 		model = Sequential()
 		model.add(Dense(input_dim=self.company.X_train.shape[1], output_dim=50, init="glorot_uniform"))
 		model.add(Activation('tanh'))
-		model.add(Dropout(0.1))
+		#model.add(Dropout(0.1))
 		model.add(Dense(input_dim=50, output_dim=10, init="uniform"))
 		model.add(Activation('tanh'))
-		model.add(Dropout(0.5))
+		#model.add(Dropout(0.5))
 		model.add(Dense(input_dim=10, output_dim=1, init="glorot_uniform"))
 		model.add(Activation("linear"))
 
