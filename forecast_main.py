@@ -139,9 +139,6 @@ class Forecast:
 		self.company.X_train = scaler.fit_transform(self.company.X_train)
 		self.company.X_test = scaler.fit_transform(self.company.X_test)
 
-		# make true train and CV split
-		self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(self.company.X_train, self.company.y_train, test_size=0.33, random_state=42)
-
 		return
 
 	def basic_vis(self):
@@ -168,8 +165,10 @@ class Forecast:
 		#print C_range
 		gamma_range = np.logspace(-9, 3, 12)
 		#print gamma_range
+		# make true train and CV split
+		cv = train_test_split(self.company.X_train, self.company.y_train, test_size=0.33, random_state=42)
 		param_grid = dict(gamma=gamma_range, C=C_range)
-		grid = GridSearchCV(svm.SVR(kernel='rbf', verbose=True), param_grid=param_grid, cv=None)
+		grid = GridSearchCV(svm.SVR(kernel='rbf', verbose=True), param_grid=param_grid, cv=cv)
 		grid.fit(self.X_train, self.y_train)
 
 		print("The best parameters are %s with a score of %0.2f"
