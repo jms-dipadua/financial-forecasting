@@ -115,10 +115,10 @@ class Forecast:
 		#self.basic_vis()
 		self.pre_process_data() #v1.x-ish: scaling, PCA, etc
 		self.svm() # uses self.company.X_train/test, etc
-		#self.ann() # uses self.company.X_train/test, etc
+		self.ann() # uses self.company.X_train/test, etc
 		# self.ensemble()  # v1.x
 		self.svm_decisions, self.svm_gain_loss = self.decisions(self.svm_preds) # this has to ouptut // generate a notion of "shares held"
-		#self.ann_decisions, self.ann_gain_loss = self.decisions(self.ann_preds) # this has to ouptut // generate a notion of "shares held"
+		self.ann_decisions, self.ann_gain_loss = self.decisions(self.ann_preds) # this has to ouptut // generate a notion of "shares held"
 		self.buy_hold_prof_loss()		
 		self.profit_loss_rollup()
 		self.write_final_file()
@@ -164,21 +164,23 @@ class Forecast:
 
 	def svm(self):
 		# for regression problems, scikitlearn uses SVR: support vector regression
-		C_range = np.logspace(-2, 10, 2)
+		C_range = np.logspace(-2, 10, 12)
 		#print C_range
-		gamma_range = np.logspace(-9, 3, 2)
+		gamma_range = np.logspace(-9, 3, 12)
 		#print gamma_range
 		param_grid = dict(gamma=gamma_range, C=C_range)
-		grid = GridSearchCV(svm.SVR(verbose=True), param_grid=param_grid, cv=None)
+		grid = GridSearchCV(svm.SVR(kernel='rbf', verbose=True), param_grid=param_grid, cv=None)
 		grid.fit(self.X_train, self.y_train)
 
 		print("The best parameters are %s with a score of %0.2f"
 			% (grid.best_params_, grid.best_score_))
 
-		self.svm_C = raw_input("input C val")
-		self.svm_gamma = raw_input("input gamma val")
-		regression = SVR(kernel='rbf', C=self.svm_C, gamma=self.svm_gamma, verbose=True)
-		self.svm_preds = grid.predict(self.X_test)
+		self.svm_preds = grid.predict(self.company.X_test)
+		#self.svm_C = float(raw_input("input C val:   "))
+		#self.svm_gamma = float(raw_input("input gamma val:   "))
+		#regression = svm.SVR(kernel='rbf', C=self.svm_C, gamma=self.svm_gamma, verbose=True)
+		#regression.fit(self.X_train, self.y_train)
+		#self.svm_preds = regression.predict(self.company.X_test)
 		#print self.company.X_train.shape
 		#print self.company.y_train.shape
 		#print self.company.y_train[0:,0]
