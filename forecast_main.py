@@ -164,11 +164,15 @@ class Forecast:
 
 	def svm(self):
 		# for regression problems, scikitlearn uses SVR: support vector regression
-		C_range = np.logspace(-2, 10, 12)
+		#C_range = np.logspace(-2, 10, 12)
 		#print C_range
-		gamma_range = np.logspace(-9, 3, 12)
+		#gamma_range = np.logspace(-9, 3, 12)
 		#print gamma_range
-		param_grid = dict(gamma=gamma_range, C=C_range)
+		#param_grid = dict(gamma=gamma_range, C=C_range)
+		# based on LONG test with the gridsearch (see notes) for v4b-5
+		# below is rounded numbers
+		param_grid = dict(C=[432876], gamma=[1.8738])
+		## probably want to introduce max iterations...
 		grid = GridSearchCV(svm.SVR(kernel='rbf', verbose=True), param_grid=param_grid, cv=5)
 		grid.fit(self.X_train, self.y_train)
 
