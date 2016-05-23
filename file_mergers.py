@@ -93,6 +93,8 @@ class Source:
 
 			print self.dataframe.shape
 
+		print list(self.dataframe.columns.values)
+		exit()
 		self.write_finished_file()
 
 	def get_params(self):
@@ -144,11 +146,11 @@ class Source:
 		}
 		
 
-		self.root_base = 'data/transformed/v4-b/' # this is where we'll version things
-		self.root_merge = 'data/fundamentals/v4-b/'
+		self.root_base = 'data/transformed/v5/' # this is where we'll version things
+		self.root_merge = 'data/fundamentals/v5/'
 
 		self.fin_file_name = raw_input("Name for Final File:    ")
-		self.fin_file_name = 'data/working/v4-b/' + self.fin_file_name
+		self.fin_file_name = 'data/working/v5/' + self.fin_file_name
 
 	def read_file(self, file_name, f_type):
     	# TYPE: base (1) vs merge (2)
