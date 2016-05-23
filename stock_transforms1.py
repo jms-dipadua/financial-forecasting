@@ -13,33 +13,67 @@ class Source:
 		self.read_file(self.o_file) # original file
 		self.initial_data_drop()
 		self.prep_numeric()
+		# SMA 5
 		self.calc_SMA(total_periods = self.dataframe.shape[0],
-			step_size = self.sma_num_periods, # less to type; reduced by one due to zero-indexing
+			step_size = 5, 
 			eval_dataframe = self.dataframe['Close'],  # get the approriate data   
 			write_col_bool = True)
+		# SMA 15
+		self.calc_SMA(total_periods = self.dataframe.shape[0],
+			step_size = 15,
+			eval_dataframe = self.dataframe['Close'],  # get the approriate data   
+			write_col_bool = True)
+		# SMA 50
+		self.calc_SMA(total_periods = self.dataframe.shape[0],
+			step_size = 50,
+			eval_dataframe = self.dataframe['Close'],  # get the approriate data   
+			write_col_bool = True)
+		# SMA 200
+		self.calc_SMA(total_periods = self.dataframe.shape[0],
+			step_size = 200,
+			eval_dataframe = self.dataframe['Close'],  # get the approriate data   
+			write_col_bool = True)
+		# WMA 10
+		self.calc_WMA(total_periods = self.dataframe.shape[0],
+			step_size = 10,
+			eval_dataframe = self.dataframe['Close'],  # get the approriate data   
+			write_col_bool = True)
+		# WMA 30
+		self.calc_WMA(total_periods = self.dataframe.shape[0],
+			step_size = 30,
+			eval_dataframe = self.dataframe['Close'],  # get the approriate data   
+			write_col_bool = True)
+		# WMA 100
+		self.calc_WMA(total_periods = self.dataframe.shape[0],
+			step_size = 100,
+			eval_dataframe = self.dataframe['Close'],  # get the approriate data   
+			write_col_bool = True)
+		# WMA 200
+		self.calc_WMA(total_periods = self.dataframe.shape[0],
+			step_size = 200,
+			eval_dataframe = self.dataframe['Close'],  # get the approriate data   
+			write_col_bool = True)
+		"""OLD WAY FOR EXAMPLE
 		self.calc_WMA(total_periods = self.dataframe.shape[0],
 			step_size = self.wma_num_periods, # less to type; reduced by one due to zero-indexing
 			eval_dataframe = self.dataframe['Close'],  # get the approriate data   
 			write_col_bool = True)
+		""" 
 		self.calc_CCI(step_size = 20) # for now we'll hardcode 20 in for size of period to examine
 		self.calc_RSI(step_size = 14) # just for now
 		self.write_finished_file()
 
 	def get_params(self):
 		self.o_file = raw_input("File to Transform:   ") # original file
-		self.o_file = 'data/raw/v3/' + self.o_file # versioning happens here too
+		self.o_file = 'data/raw/' + self.o_file # versioning happens here too
+		""" for fast iteration, i'm just going to hard-code the SMA/WMA periods
 		# can even ask HOW MANY of each of these i want - for now, KISS
 		self.sma_num_periods = int(raw_input("Number of Periods for SMA:   ")) # 8, for last run
-		self.wma_num_periods = float(raw_input("Number of Periods for WMA:   ")) # 12, for last runs
-		self.wma_weights = [] # hardcoded for now. can make this a prompt-loop in future iterations
-		equi_weights = 1 / self.wma_num_periods
-		self.wma_num_periods = int(self.wma_num_periods) # converting back to int 
-		for i in range(1,self.wma_num_periods+1): # doesn't currently add up to 1 but that's not a true constraint
-			weight = equi_weights * i
-			self.wma_weights.append(weight)
+		self.wma_num_periods = int(raw_input("Number of Periods for WMA:   ")) # 12, for last runs		
+		"""
 		#self.rsi_num_periods = int(raw_input("Number of Periods for RSI:    "))
 		self.fin_file_name = raw_input("Name for Final File:    ")
-		self.fin_file_name = 'data/transformed/v3/' + self.fin_file_name
+		self.fin_file_name = 'data/transformed/v5-test/' + self.fin_file_name
 
 	def read_file(self, file_name):
     	# Read data
@@ -111,26 +145,21 @@ class Source:
 			for i in range(0, total_periods):
 				eval_data = []
 				step_size_tot = 0
-				for j in range(1, step_size): #MAY NEED ADJUSTMENT -- is this starting in the right place?
+				for j in range(1, step_size +1): #MAY NEED ADJUSTMENT -- is this starting in the right place?
 					if not i - j >= 0:
-						eval_data.append(eval_dataframe.iloc[i] * j)
+						# because we're moving backward, the first weight needs be *1, and end w/ the last weight
+						# EX: 3 periods: period 1 * 1 + period2 *2 + period3 * 3 so that period 3 (most recent period) carries greatest weight
+						eval_data.append(eval_dataframe.iloc[i] * (step_size + 1 - j))
 						step_size_tot +=j
 					else:
-						eval_data.append(eval_dataframe.iloc[i-j] * j)
+						eval_data.append(eval_dataframe.iloc[i-j] * (step_size + 1 - j))
 						step_size_tot +=j
-				weighted_mean = 0
-				k = 0
-				weight_sum = 0
 				eval_data = np.array(eval_data)
+				#print eval_data
 				eval_sum = np.sum(eval_data)
+				#print "period:  %d   evaluated sum: %f   and step_tot:  %d"  % (i, eval_sum, step_size_tot)
 				weighted_mean = round(eval_sum / step_size_tot, 2)
-				"""
-				for value in eval_data:
-					weighted_mean += value * self.wma_weights[k]
-					weight_sum += self.wma_weights[k]
-					k += 1
-				weighted_mean = round(weighted_mean / weight_sum, 2)
-				"""
+				#print weighted_mean
 				wmas.append(weighted_mean)
 		    # end main foor loop
 		if write_col_bool == True: # use this in the generalization method
