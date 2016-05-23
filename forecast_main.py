@@ -330,7 +330,7 @@ class Forecast:
 		return
 
 	def write_final_file(self):
-		columns = ['Actual', 'SVM', 'ANN']
+		columns = ['Actual', 'SVM', 'ANN', 'SVM-decisons']
 		# going to make a data frame to print to a csv
 		# but preds were not all in the same shape
 		# this helps with that and merges them all up

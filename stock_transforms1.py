@@ -18,7 +18,7 @@ class Source:
 			eval_dataframe = self.dataframe['Close'],  # get the approriate data   
 			write_col_bool = True)
 		self.calc_WMA(total_periods = self.dataframe.shape[0],
-			step_size = self.sma_num_periods, # less to type; reduced by one due to zero-indexing
+			step_size = self.wma_num_periods, # less to type; reduced by one due to zero-indexing
 			eval_dataframe = self.dataframe['Close'],  # get the approriate data   
 			write_col_bool = True)
 		self.calc_CCI(step_size = 20) # for now we'll hardcode 20 in for size of period to examine
@@ -110,19 +110,27 @@ class Source:
 			wmas = [] # holder array for all wmas
 			for i in range(0, total_periods):
 				eval_data = []
+				step_size_tot = 0
 				for j in range(1, step_size): #MAY NEED ADJUSTMENT -- is this starting in the right place?
 					if not i - j >= 0:
-						eval_data.append(eval_dataframe.iloc[i])
+						eval_data.append(eval_dataframe.iloc[i] * j)
+						step_size_tot +=j
 					else:
-						eval_data.append(eval_dataframe.iloc[i-j])
+						eval_data.append(eval_dataframe.iloc[i-j] * j)
+						step_size_tot +=j
 				weighted_mean = 0
 				k = 0
 				weight_sum = 0
+				eval_data = np.array(eval_data)
+				eval_sum = np.sum(eval_data)
+				weighted_mean = round(eval_sum / step_size_tot, 2)
+				"""
 				for value in eval_data:
 					weighted_mean += value * self.wma_weights[k]
 					weight_sum += self.wma_weights[k]
 					k += 1
 				weighted_mean = round(weighted_mean / weight_sum, 2)
+				"""
 				wmas.append(weighted_mean)
 		    # end main foor loop
 		if write_col_bool == True: # use this in the generalization method
