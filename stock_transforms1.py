@@ -73,7 +73,7 @@ class Source:
 		"""
 		#self.rsi_num_periods = int(raw_input("Number of Periods for RSI:    "))
 		self.fin_file_name = raw_input("Name for Final File:    ")
-		self.fin_file_name = 'data/transformed/v5-test/' + self.fin_file_name
+		self.fin_file_name = 'data/transformed/v5/' + self.fin_file_name
 
 	def read_file(self, file_name):
     	# Read data
