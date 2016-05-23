@@ -164,8 +164,8 @@ class Source:
 		    # end main foor loop
 		if write_col_bool == True: # use this in the generalization method
 			# append cols... 
-			self.dataframe['WMA-'+str(self.wma_num_periods)] = wmas
-			self.final_columns.append('WMA-'+str(self.wma_num_periods))
+			self.dataframe['WMA-'+str(step_size)] = wmas
+			self.final_columns.append('WMA-'+str(step_size))
 		else:
 			return wmas
     
