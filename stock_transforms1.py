@@ -133,8 +133,8 @@ class Source:
 		    # end main foor loop
 		if write_col_bool == True: # either append SMA to final dataframe OR return the SMA vector to the calling function
 			# append cols... 
-			self.dataframe['SMA-'+str(self.sma_num_periods)] = smas
-			self.final_columns.append('SMA-'+str(self.sma_num_periods))
+			self.dataframe['SMA-'+str(step_size)] = smas
+			self.final_columns.append('SMA-'+str(step_size))
 		else:
 			return smas 
 
