@@ -56,20 +56,24 @@ class Company:
 
 		# the following section is for experiment customization: ie selection of which inputs to keep or drop
 		columns = list(self.raw_data.columns.values)
-		drop_cols = []
-		drop_col_nums =[] # use this so i can make it more reliable for future experiments (i.e. when dropping the same columns across different companies)
+		#drop_cols = []
+		#drop_col_nums =[] # use this so i can make it more reliable for future experiments (i.e. when dropping the same columns across different companies)
 		counter = 0
-		# get the columns to keep
+		# get the columns to keep (manual version)
+		"""
 		for column in columns:
 			print "Keep (1) or DROP (0):  %r"  % column
 			if int(raw_input()) == 0:
 				drop_cols.append(column)
 				drop_col_nums.append(counter)
 			counter += 1
-		print drop_cols # so i can keep track of this for experiment documentation purposes 
-		print drop_col_nums
-		self.raw_data = self.raw_data.drop([drop_cols], axis = 1)
-		print list(self.raw_data.columns.valus) # again for documentation purposes 
+		#print drop_cols # so i can keep track of this for experiment documentation purposes 
+		#print drop_col_nums
+		"""
+		drop_cols = ['DGS10', 'DCOILBRENTEU', 'xCIVPART', 'UNRATE', 'CPIAUCSL', 'GFDEGDQ188S', 'HOUST', 'IC4WSA', 'USD3MTD156N', 'PCE', 'PSAVERT', 'xA191RL1Q225SBEA', 'spClose', 'DEXUSEU', 'EPS', '12mo-EPS', 'net_income', 'total_assets', 'total_revenue', 'free_cash_flow', 'total_liabilities', 'profit_margin']
+		drop_col_nums = [14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35]
+		self.raw_data.drop(self.raw_data.columns[drop_col_nums], axis = 1, inplace=True)
+		print list(self.raw_data.columns.values) # again for documentation purposes 
 		
 	def gen_train_test(self):
 		# split timeseries
@@ -182,9 +186,9 @@ class Forecast:
 
 	def svm(self):
 		# for regression problems, scikitlearn uses SVR: support vector regression
-		C_range = np.logspace(-2, 10, 12)
+		C_range = np.logspace(-2, 10, 3) # normally 12
 		#print C_range
-		gamma_range = np.logspace(-9, 3, 12)
+		gamma_range = np.logspace(-9, 3, 3)  # normally 12
 		#print gamma_range
 		param_grid = dict(gamma=gamma_range, C=C_range)
 		# based on LONG test with the gridsearch (see notes) for v4b-5
@@ -215,7 +219,7 @@ class Forecast:
 		print self.reg_score
 
 		# save the parameters to a file
-		joblib.dump(grid.best_estimator_,  self.fin_dir + self.experiment_version +'_svm_model.pkl')
+		joblib.dump(grid.best_estimator_,  self.company.fin_dir + self.company.experiment_version +'_svm_model.pkl')
 
 		"""
 		# visualize results 
