@@ -50,7 +50,7 @@ class Company:
 			self.raw_data = self.raw_data.drop(['Volume'], axis=1)
 		
 		if 'Date' in columns:
-			self.raw_dates = self.raw_data.loc(['Date'])
+			self.raw_dates = self.raw_data['Date']
 			#print self.raw_dates
 			self.raw_data = self.raw_data.drop(['Date'], axis=1)
 
