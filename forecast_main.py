@@ -186,9 +186,9 @@ class Forecast:
 
 	def svm(self):
 		# for regression problems, scikitlearn uses SVR: support vector regression
-		C_range = np.logspace(-2, 10, 3) # normally 12
+		C_range = np.logspace(-2, 10, 12) # normally 12
 		#print C_range
-		gamma_range = np.logspace(-9, 3, 3)  # normally 12
+		gamma_range = np.logspace(-9, 3, 12)  # normally 12
 		#print gamma_range
 		param_grid = dict(gamma=gamma_range, C=C_range)
 		# based on LONG test with the gridsearch (see notes) for v4b-5
@@ -219,7 +219,7 @@ class Forecast:
 		print self.reg_score
 
 		# save the parameters to a file
-		joblib.dump(grid.best_estimator_,  self.company.fin_dir + self.company.experiment_version +'_svm_model.pkl')
+		joblib.dump(grid.best_estimator_,  self.company.fin_dir + '/svm-models/' + self.company.experiment_version +'_svm_model.pkl')
 
 		"""
 		# visualize results 
@@ -248,10 +248,10 @@ class Forecast:
 		# first model
 		print "fitting first model"
 		model.fit(self.company.X_train, self.company.y_train, nb_epoch=1000, validation_split=.1, batch_size=16, verbose = 1, show_accuracy = True, shuffle = False, callbacks=[early_stopping])
-		score = model.evaluate(self.company.X_cv, self.company.y_cv, show_accuracy=True, batch_size=16)
+		#score = model.evaluate(self.company.X_cv, self.company.y_cv, show_accuracy=True, batch_size=16)
 		self.ann_preds = model.predict(self.company.X_test)
 		#print self.ann_preds
-		print "Trained ANN Score: %f" % score
+		#print "Trained ANN Score: %f" % score
 		# visualize
 		#plot(model, to_file= self.company.fin_file_name + '.png')
 
