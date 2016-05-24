@@ -63,8 +63,7 @@ class Company:
 			if int(raw_input()) == 0:
 				drop_cols.append(column)
 		print drop_cols # so i can keep track of this for experiment documentation purposes 
-		for column in drop_cols:
-			self.raw_data = self.raw_data.drop([column], axis = 1)
+		self.raw_data = self.raw_data.drop([drop_cols], axis = 1)
 		print list(self.raw_data.columns.valus) # again for documentation purposes 
 		
 	def gen_train_test(self):
