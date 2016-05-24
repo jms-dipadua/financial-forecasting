@@ -53,6 +53,19 @@ class Company:
 			self.raw_dates = self.raw_data.loc(['Date'])
 			#print self.raw_dates
 			self.raw_data = self.raw_data.drop(['Date'], axis=1)
+
+		# the following section is for experiment customization: ie selection of which inputs to keep or drop
+		columns = list(self.raw_data.columns.values)
+		drop_cols =[]
+		# get the columns to keep
+		for column in columns:
+			print "Keep (1) or DROP (0):  %r"  % column
+			if int(raw_input()) == 0:
+				drop_cols.append(column)
+		print drop_cols # so i can keep track of this for experiment documentation purposes 
+		for column in drop_cols:
+			self.raw_data = self.raw_data.drop([column], axis = 1)
+		print list(self.raw_data.columns.valus) # again for documentation purposes 
 		
 	def gen_train_test(self):
 		# split timeseries
