@@ -56,13 +56,18 @@ class Company:
 
 		# the following section is for experiment customization: ie selection of which inputs to keep or drop
 		columns = list(self.raw_data.columns.values)
-		drop_cols =[]
+		drop_cols = []
+		drop_col_nums =[] # use this so i can make it more reliable for future experiments (i.e. when dropping the same columns across different companies)
+		counter = 0
 		# get the columns to keep
 		for column in columns:
 			print "Keep (1) or DROP (0):  %r"  % column
 			if int(raw_input()) == 0:
 				drop_cols.append(column)
+				drop_col_nums.append(counter)
+			counter += 1
 		print drop_cols # so i can keep track of this for experiment documentation purposes 
+		print drop_col_nums
 		self.raw_data = self.raw_data.drop([drop_cols], axis = 1)
 		print list(self.raw_data.columns.valus) # again for documentation purposes 
 		
