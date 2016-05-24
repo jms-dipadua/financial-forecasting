@@ -187,9 +187,9 @@ class Forecast:
 
 	def svm(self):
 		# for regression problems, scikitlearn uses SVR: support vector regression
-		C_range = np.logspace(-2, 10, 1) # normally 12
+		C_range = np.logspace(-2, 10, 12) # normally 12
 		#print C_range
-		gamma_range = np.logspace(-9, 3, 1)  # normally 12
+		gamma_range = np.logspace(-9, 3, 12)  # normally 12
 		#print gamma_range
 		param_grid = dict(gamma=gamma_range, C=C_range)
 		# based on LONG test with the gridsearch (see notes) for v4b-5
@@ -248,7 +248,7 @@ class Forecast:
 		#epoch_score = model.evaluate(X_score, y_score, batch_size = 16) # this doesn't work
 		# first model
 		print "fitting first model"
-		model.fit(self.company.X_train, self.company.y_train, nb_epoch=10, validation_split=.1, batch_size=16, verbose = 1, show_accuracy = True, shuffle = False, callbacks=[early_stopping])
+		model.fit(self.company.X_train, self.company.y_train, nb_epoch=1000, validation_split=.1, batch_size=16, verbose = 1, show_accuracy = True, shuffle = False, callbacks=[early_stopping])
 		score = model.evaluate(self.company.X_cv.values, self.company.y_cv, show_accuracy=True, batch_size=16)
 		self.ann_preds = model.predict(self.company.X_test)
 		#print self.ann_preds
@@ -368,7 +368,6 @@ class Forecast:
 		self.final_df = np.hstack((self.final_df, np.transpose(np.array( [self.ann_decisions] ))  ))
 		self.final_df = pd.DataFrame(self.final_df, columns=columns)
 		self.final_df['Date'] = self.company.y_dates
-		print self.final_df.shape
 		
 		final_file = self.final_df.to_csv(self.company.fin_file_name,index_label='id')
 		#pl_fin_file = self.profit_df.to_csv(self.company.pl_file_name)
