@@ -10,6 +10,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.cross_validation import train_test_split, StratifiedKFold, KFold
 from sklearn.learning_curve import learning_curve
 from sklearn.grid_search import GridSearchCV
+from sklearn.externals import joblib
 
 
 from keras.models import Sequential
@@ -29,8 +30,8 @@ class Company:
 	def get_params(self):
 		print "welcome to the jungle."
 		self.base_file = raw_input("RAW COMPANY file:   ") # base file
-		self.root_dir = 'data/working/v4-b/'  # version directory
-		self.fin_dir = 'data/outputs/v4-b/' # version directory
+		self.root_dir = 'data/working/v5/'  # version directory
+		self.fin_dir = 'data/outputs/v5/' # version directory
 		self.experiment_version = raw_input("Experiment Version:    ")
 		self.fin_file_name = self.fin_dir + self.experiment_version +'.csv' # --> USE THE ROOT EXP FOR FILES? OR JUST ONE OUPUT?
 		self.pl_file_name = self.fin_dir + self.experiment_version +'_pl.csv'
@@ -164,16 +165,16 @@ class Forecast:
 
 	def svm(self):
 		# for regression problems, scikitlearn uses SVR: support vector regression
-		#C_range = np.logspace(-2, 10, 12)
+		C_range = np.logspace(-2, 10, 12)
 		#print C_range
-		#gamma_range = np.logspace(-9, 3, 12)
+		gamma_range = np.logspace(-9, 3, 12)
 		#print gamma_range
-		#param_grid = dict(gamma=gamma_range, C=C_range)
+		param_grid = dict(gamma=gamma_range, C=C_range)
 		# based on LONG test with the gridsearch (see notes) for v4b-5
 		# below is rounded numbers
-		param_grid = dict(C=[432876], gamma=[1.8738])
+		#param_grid = dict(C=[432876], gamma=[1.8738])
 		## probably want to introduce max iterations...
-		grid = GridSearchCV(svm.SVR(kernel='rbf', verbose=True), param_grid=param_grid, cv=5)
+		grid = GridSearchCV(svm.SVR(kernel='rbf', verbose=True), param_grid=param_grid, cv=2)
 		grid.fit(self.X_train, self.y_train)
 
 		print("The best parameters are %s with a score of %0.2f"
@@ -195,6 +196,10 @@ class Forecast:
 		self.reg_score = grid.score(self.company.X_cv, self.company.y_cv)
 		#self.reg_score = mean_absolute_error(self.company.y_valid, self.svm_preds)
 		print self.reg_score
+
+		# save the parameters to a file
+		joblib.dump(grid.best_estimator_,  self.fin_dir + self.experiment_version +'_svm_model.pkl')
+
 		"""
 		# visualize results 
 		plt.scatter(self.company.X_test[:, 3], self.company.y_test, color="k")
@@ -222,10 +227,10 @@ class Forecast:
 		# first model
 		print "fitting first model"
 		model.fit(self.company.X_train, self.company.y_train, nb_epoch=1000, validation_split=.1, batch_size=16, verbose = 1, show_accuracy = True, shuffle = False, callbacks=[early_stopping])
-		#score = model.evaluate(self.company.X_cv, self.company.y_cv, show_accuracy=True, batch_size=16)
+		score = model.evaluate(self.company.X_cv, self.company.y_cv, show_accuracy=True, batch_size=16)
 		self.ann_preds = model.predict(self.company.X_test)
 		#print self.ann_preds
-		#print score
+		print "Trained ANN Score: %f" % score
 		# visualize
 		#plot(model, to_file= self.company.fin_file_name + '.png')
 

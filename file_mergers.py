@@ -73,8 +73,6 @@ class Source:
 		self.get_params()
 		self.read_file(self.base_file, 1) # base file
 		self.initial_data_drop() # i.e. drop IDs from df
-		# in drop, we create self.dataframe which is our final dataframe
-		self.final_columns = list(self.dataframe.columns.values)
 
 		""" BULK OF WORK HERE  
 			# LOOP THROUGH EACH MERGE file
@@ -90,11 +88,9 @@ class Source:
 				merge_dataframe = self.raw_data_merge
 			# with a "cleanish" dataframe in hand, merge the data
 			self.merge_data(merge_dataframe)
-
 			print self.dataframe.shape
 
-		print list(self.dataframe.columns.values)
-		exit()
+		self.calc_PE()
 		self.write_finished_file()
 
 	def get_params(self):
@@ -145,7 +141,6 @@ class Source:
 			self.financials_file: 93
 		}
 		
-
 		self.root_base = 'data/transformed/v5/' # this is where we'll version things
 		self.root_merge = 'data/fundamentals/v5/'
 
@@ -201,15 +196,19 @@ class Source:
 		# we transpose to get the column vector
 		all_dates = np.transpose(all_dates)
 		all_date_vals = np.array(all_date_vals)
-		print all_dates.shape
-		print all_date_vals.shape
+		#print all_dates.shape
+		#print all_date_vals.shape
 		merged_dates_date_vals = np.hstack((all_dates, all_date_vals))
 		new_merge_df = pd.DataFrame(merged_dates_date_vals, columns = tmp_df_cols)
 		#print new_merge_df
 		# return it to the calling function
 		return new_merge_df
 
+	def calc_PE(self):
+		self.dataframe['PE'] = pd.to_numeric(self.dataframe['Close']) / pd.to_numeric(self.dataframe['EPS'])
+
 	def write_finished_file(self):
+		print self.dataframe.shape
 		final_file = self.dataframe.to_csv(self.fin_file_name,index_label='id')
 
 if __name__ == "__main__":
