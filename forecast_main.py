@@ -182,8 +182,8 @@ class Forecast:
             square=True, xticklabels=5, yticklabels=5,
             linewidths=.5, cbar_kws={"shrink": .5}, ax=ax)
 		#plt.show()
-		f.savefig(self.company.experiment_version+'.png')
-		exit()
+		f.savefig(self.fin_dir + /'correlation-images/' + self.company.experiment_version+'.png')
+		
 
 
 	def svm(self):
