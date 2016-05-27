@@ -182,15 +182,13 @@ class Forecast:
             square=True, xticklabels=5, yticklabels=5,
             linewidths=.5, cbar_kws={"shrink": .5}, ax=ax)
 		#plt.show()
-		f.savefig(self.fin_dir + /'correlation-images/' + self.company.experiment_version+'.png')
+		f.savefig(self.company.fin_dir + '/correlation-images/' + self.company.experiment_version+'.png')
 		
-
-
 	def svm(self):
 		# for regression problems, scikitlearn uses SVR: support vector regression
-		C_range = np.logspace(-2, 10, 12) # normally 12
+		C_range = np.logspace(-2, 10, 1) # normally 12
 		#print C_range
-		gamma_range = np.logspace(-9, 3, 12)  # normally 12
+		gamma_range = np.logspace(-9, 3, 1)  # normally 12
 		#print gamma_range
 		param_grid = dict(gamma=gamma_range, C=C_range)
 		# based on LONG test with the gridsearch (see notes) for v4b-5
@@ -204,16 +202,13 @@ class Forecast:
 			% (grid.best_params_, grid.best_score_))
 
 		self.svm_preds = grid.predict(self.company.X_test)
+		# this is for repeating or one-off specific experiments
 		#self.svm_C = float(raw_input("input C val:   "))
 		#self.svm_gamma = float(raw_input("input gamma val:   "))
 		#regression = svm.SVR(kernel='rbf', C=self.svm_C, gamma=self.svm_gamma, verbose=True)
 		#regression.fit(self.X_train, self.y_train)
 		#self.svm_preds = regression.predict(self.company.X_test)
-		#print self.company.X_train.shape
-		#print self.company.y_train.shape
-		#print self.company.y_train[0:,0]
-		#print self.company.X_test.shape
-
+		
 		#print self.svm_preds
 		
 		self.reg_score = grid.score(self.company.X_cv, self.company.y_cv)
@@ -223,13 +218,9 @@ class Forecast:
 		# save the parameters to a file
 		joblib.dump(grid.best_estimator_,  self.company.fin_dir + '/svm-models/' + self.company.experiment_version +'_svm_model.pkl')
 
-		"""
+		
 		# visualize results 
-		plt.scatter(self.company.X_test[:, 3], self.company.y_test, color="k")
-		plt.plot(self.company.X_test[:, 3], self.svm_preds, color='b')
-		plt.show()
-		"""
-		return
+		
 
 	def ann(self):
 		#print self.company.X_train.shape[1]
