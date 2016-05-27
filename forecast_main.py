@@ -190,7 +190,6 @@ class Forecast:
 		plt.yticks(rotation=0) 
 		#plt.show()
 		f.savefig(self.company.fin_dir + '/correlation-images/' + self.company.experiment_version+'.png')
-		exit()
 		
 	def svm(self):
 		# for regression problems, scikitlearn uses SVR: support vector regression
