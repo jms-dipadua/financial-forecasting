@@ -135,7 +135,7 @@ class Company:
 class Forecast:
 	def __init__(self):
 		self.company = Company()
-		#self.basic_vis()
+		self.basic_vis()
 		self.pre_process_data() #v1.x-ish: scaling, PCA, etc
 		self.svm() # uses self.company.X_train/test, etc
 		self.ann() # uses self.company.X_train/test, etc
@@ -181,8 +181,9 @@ class Forecast:
 		sns.heatmap(correlations, mask=mask, cmap=cmap, vmax=.3,
             square=True, xticklabels=5, yticklabels=5,
             linewidths=.5, cbar_kws={"shrink": .5}, ax=ax)
-		plt.show()
-		return
+		#plt.show()
+		f.savefig(self.company.experiment_version+'.png')
+		exit()
 
 
 	def svm(self):
