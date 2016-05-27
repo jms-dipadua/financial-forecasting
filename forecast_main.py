@@ -159,8 +159,8 @@ class Forecast:
 
 		#  SCALE input values ...not sure if i should do the target...
 		scaler = StandardScaler()
-		self.company.X_train = scaler.fit_transform(self.company.X_train)
-		self.company.X_test = scaler.fit_transform(self.company.X_test)
+		self.X_train = scaler.fit_transform(self.company.X_train)
+		self.X_test = scaler.fit_transform(self.company.X_test)
 
 		# make true train and CV split
 		self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(self.company.X_train, self.company.y_train, test_size=0.33, random_state=42)
@@ -221,28 +221,24 @@ class Forecast:
 		
 		# visualize results 
 		plt.figure()
-		plt.title(title)
-	    plt.xlabel("Training examples")
-	    plt.ylabel("Score")
-	    train_sizes, train_scores, test_scores = learning_curve(
-	        grid.best_estimator_, self.X_train, self.y_train, cv=2, n_jobs=n_jobs, train_sizes=train_sizes)
-	    train_scores_mean = np.mean(train_scores, axis=1)
-	    train_scores_std = np.std(train_scores, axis=1)
-	    test_scores_mean = np.mean(test_scores, axis=1)
-	    test_scores_std = np.std(test_scores, axis=1)
-	    plt.grid()
-
-	    plt.fill_between(train_sizes, train_scores_mean - train_scores_std,
-	                     train_scores_mean + train_scores_std, alpha=0.1,
-	                     color="r")
-	    plt.fill_between(train_sizes, test_scores_mean - test_scores_std,
-	                     test_scores_mean + test_scores_std, alpha=0.1, color="g")
-	    plt.plot(train_sizes, train_scores_mean, 'o-', color="r",
-	             label="Training score")
-	    plt.plot(train_sizes, test_scores_mean, 'o-', color="g",
-	             label="Cross-validation score")
-
-	    plt.legend(loc="best")
+		plt.title("SVM Learning Curve: " + self.company.experiment_version)
+		plt.xlabel("Training examples")
+		plt.ylabel("Score")
+		train_sizes, train_scores, test_scores = learning_curve(
+			grid.best_estimator_, self.X_train, self.y_train, cv=2, train_sizes=[50, 80, 110])
+		train_scores_mean = np.mean(train_scores, axis=1)
+		train_scores_std = np.std(train_scores, axis=1)
+		test_scores_mean = np.mean(test_scores, axis=1)
+		test_scores_std = np.std(test_scores, axis=1)
+		plt.grid()
+		plt.fill_between(train_sizes, train_scores_mean - train_scores_std, train_scores_mean + train_scores_std, 
+			alpha=0.1, color="r")
+		plt.fill_between(train_sizes, test_scores_mean - test_scores_std,test_scores_mean + test_scores_std, 
+			alpha=0.1, color="g")
+		plt.plot(train_sizes, train_scores_mean, 'o-', color="r", label="Training score")
+		plt.plot(train_sizes, test_scores_mean, 'o-', color="g", label="Cross-validation score")
+		plt.legend(loc="best")
+		plt.savefig(self.company.fin_dir + '/svm-learning-curves/' + self.company.experiment_version+'.png')
 
 	def ann(self):
 		#print self.company.X_train.shape[1]
@@ -282,6 +278,8 @@ class Forecast:
 		decisions = []
 		gain_loss = []
 		num_preds = predictions.shape[0]
+		day_highs = round(self.company.X_test['High'],3)
+		day_low = round(self.company.X_test['Low'],3)
 
 		#print "total number of predictions: %f"  % num_preds
 		#print "shape of y_test: %f  "  % self.company.y_test.shape
@@ -292,6 +290,9 @@ class Forecast:
 			# SETUP
 			# the actual close value
 			actual_close = round(self.company.y_test[i],3)
+			day_high = day_highs[i]
+			day_low = day_lows[i]
+			
 			# the previous close, pulled from y_train (for first row of x) and y_test
 			if i == 0:
 				prv_close = round(self.company.y_train[-1],3)
@@ -303,7 +304,7 @@ class Forecast:
 			# buy
 			if predictions[i] > prv_close and self.shares_held == 0:
 				# have to fabricate a buy price: using mean of prv close & actual close...seems sort of realistic...could do mean of high, low, open too...
-				self.buy_price = round((prv_close + actual_close) / 2, 3)
+				self.buy_price = round((day_high + day_low) / 2, 3)
 				self.shares_held = int(round(1000 / self.buy_price))
 				#print "shares purchased: %r at %r"  % (self.shares_held, self.buy_price)
 				#print "actual close: %r   ::  predicted close: %r    ::   previous close: %r " % (actual_close, predictions[i], prv_close)
@@ -312,7 +313,7 @@ class Forecast:
 			elif self.buy_price < prv_close and self.shares_held > 0:
 				# stop loss check; if not > 3% loss, then no change
 				if (self.shares_held * self.buy_price) / (prv_close * self.shares_held) < .97:
-					sell_price = (prv_close + actual_close) / 2 # mean of prv & actual..."market-ish price"
+					sell_price = (day_high + day_low) / 2 # mean of prv & actual..."market-ish price"
 					gain_loss.append(sell_price * self.shares_held - self.buy_price * self.shares_held)
 					# reset holdings
 					self.shares_held = 0
@@ -325,7 +326,7 @@ class Forecast:
 			elif self.buy_price > prv_close and self.shares_held >0:
 				# stop gain check; if not > 10% gain, then no change
 				if ((self.shares_held * self.buy_price) / (prv_close * self.shares_held) -1) > .1:
-					sell_price = (prv_close + actual_close) / 2 # mean of prv & actual..."market-ish price"
+					sell_price = (day_high + day_low) / 2 # mean of prv & actual..."market-ish price"
 					gain_loss.append(sell_price * self.shares_held - self.buy_price * self.shares_held )
 					self.shares_held = 0
 					self.buy_price = 0
@@ -337,7 +338,7 @@ class Forecast:
 				decisions.append("Hold")	
 			# *have* to liquidate on the last day	
 			if i == num_preds -1 and self.shares_held > 0: 
-				sell_price = (prv_close + actual_close) / 2 # mean of prv & actual..."market-ish price"
+				sell_price = (day_high + day_low) / 2 # mean of prv & actual..."market-ish price"
 				gain_loss.append(sell_price * self.shares_held - self.buy_price * self.shares_held )
 				decisions.append("final_day_liquidation")
 		
