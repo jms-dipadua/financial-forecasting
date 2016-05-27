@@ -19,6 +19,8 @@ from keras.layers.convolutional import Convolution1D, MaxPooling1D, Convolution2
 from keras.optimizers import SGD
 from keras.callbacks import EarlyStopping
 #from keras.utils.visualize_util import plot
+#import pydot
+#import graphviz
 
 class Company: 
 	def __init__(self):
@@ -138,6 +140,7 @@ class Forecast:
 		self.basic_vis()
 		self.pre_process_data() #v1.x-ish: scaling, PCA, etc
 		self.svm() # uses self.company.X_train/test, etc
+		exit()
 		self.ann() # uses self.company.X_train/test, etc
 		# self.ensemble()  # v1.x
 		self.svm_decisions, self.svm_gain_loss = self.decisions(self.svm_preds) # this has to ouptut // generate a notion of "shares held"
@@ -176,15 +179,18 @@ class Forecast:
 		mask[np.triu_indices_from(mask)] = True
 		# Set up the matplotlib figure
 		f, ax = plt.subplots(figsize=(11, 9))
+		plt.title("Feature Correlations")
 		# Generate a custom diverging colormap
 		cmap = sns.diverging_palette(220, 10, as_cmap=True)
 
 		# Draw the heatmap with the mask and correct aspect ratio
 		sns.heatmap(correlations, mask=mask, cmap=cmap, vmax=.3,
-            square=True, xticklabels=5, yticklabels=5,
-            linewidths=.5, cbar_kws={"shrink": .5}, ax=ax)
+            square=False, xticklabels=3, yticklabels=True,
+            linewidths=.6, cbar_kws={"shrink": .5}, ax=ax)
+		plt.yticks(rotation=0) 
 		#plt.show()
 		f.savefig(self.company.fin_dir + '/correlation-images/' + self.company.experiment_version+'.png')
+		exit()
 		
 	def svm(self):
 		# for regression problems, scikitlearn uses SVR: support vector regression
@@ -227,7 +233,7 @@ class Forecast:
 		plt.xlabel("Training examples")
 		plt.ylabel("Score")
 		train_sizes, train_scores, test_scores = learning_curve(
-			grid.best_estimator_, self.X_train, self.y_train, cv=2, train_sizes=[50, 80, 110])
+			grid.best_estimator_, self.X_train, self.y_train, cv=5, train_sizes=[50, 100, 200, 300, 400, 500, 600])
 		train_scores_mean = np.mean(train_scores, axis=1)
 		train_scores_std = np.std(train_scores, axis=1)
 		test_scores_mean = np.mean(test_scores, axis=1)
@@ -244,6 +250,7 @@ class Forecast:
 
 	def ann(self):
 		#print self.company.X_train.shape[1]
+		
 		model = Sequential()
 		model.add(Dense(input_dim=self.company.X_train.shape[1], output_dim=50, init="glorot_uniform"))
 		#model.add(Activation('tanh'))
@@ -257,14 +264,48 @@ class Forecast:
 		sgd = SGD(lr=0.3, decay=1e-6, momentum=0.9, nesterov=True)
 		model.compile(loss='mean_squared_error', optimizer='rmsprop')
 		early_stopping = EarlyStopping(monitor='val_loss', patience=70)
-		
+
 		model.fit(self.company.X_train, self.company.y_train, nb_epoch=1000, validation_split=.1, batch_size=16, verbose = 1, show_accuracy = True, shuffle = False, callbacks=[early_stopping])
 		score = model.evaluate(self.company.X_cv.values, self.company.y_cv, show_accuracy=True, batch_size=16)
 		self.ann_preds = model.predict(self.company.X_test)
-		#print self.ann_preds
-		print "Trained ANN Score: %r" % score
+		"""
+		nb_features = self.company.X_train.shape[1]
+		X_train = self.company.X_train.reshape(self.company.X_train.shape + (1, ))
+		X_test = self.company.X_test.reshape(self.company.X_test.shape + (1, ))
+		print X_train.shape
+
+		model = Sequential()
+		model.add(Convolution1D(nb_filter = 24, filter_length = 1, input_shape =(nb_features,1) ))
+		model.add(Activation("tanh"))
+		model.add(Dropout(0.2)) # some dropout to help w/ overfitting
+		model.add(Convolution1D(nb_filter = 48, filter_length= 1, subsample_length= 1))
+		model.add(Activation("tanh"))
+		model.add(Convolution1D(nb_filter = 96, filter_length= 1, subsample_length=1))
+		model.add(Activation("tanh"))
+		model.add(Dropout(0.3))
+		model.add(Convolution1D(nb_filter = 192, filter_length= 1, subsample_length=1))
+		model.add(Activation("tanh"))
+		model.add(Dropout(0.6))
+		model.add(MaxPooling1D(pool_length=2))
+		# flatten to add dense layers
+		model.add(Flatten())
+		#model.add(Dense(input_dim=nb_features, output_dim=50))
+		model.add(Dense(nb_features * 2))
+		model.add(Activation("tanh"))
+		#model.add(Dropout(0.5))
+		model.add(Dense(1))
+		model.add(Activation("linear"))
+		sgd = SGD(lr=0.1, decay=1e-6, momentum=0.9, nesterov=True)
+		model.compile(loss='mean_squared_error', optimizer='sgd')
+		early_stopping = EarlyStopping(monitor='val_loss', patience=5)
+
+		model.fit(X_train, self.company.y_train, nb_epoch=50, validation_split=0.25, verbose = 1, callbacks=[early_stopping])
+		self.ann_preds = model.predict(X_test)
+		"""
+		print self.ann_preds
+		#print "Trained ANN Score: %r" % score
 		# visualize
-		#plot(model, to_file= self.company.fin_file_name + '.png')
+		#plot(model, to_file= '/ann-training/' + self.company.fin_file_name + '.png')
 
 		return
 
