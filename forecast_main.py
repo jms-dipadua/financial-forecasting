@@ -3,21 +3,24 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+import yaml
+import h5py
 
 from sklearn import svm
-from sklearn.metrics import f1_score, accuracy_score, mean_absolute_error
+from sklearn.metrics import f1_score, accuracy_score, mean_absolute_error, mean_squared_error
 from sklearn.preprocessing import StandardScaler
 from sklearn.cross_validation import train_test_split, StratifiedKFold, KFold
 from sklearn.learning_curve import learning_curve
 from sklearn.grid_search import GridSearchCV
 from sklearn.externals import joblib
 
-
-from keras.models import Sequential
+from keras.models import Sequential, model_from_yaml
 from keras.layers.core import Dense, Activation, Dropout, Flatten
 from keras.layers.convolutional import Convolution1D, MaxPooling1D, Convolution2D, MaxPooling2D
 from keras.optimizers import SGD
 from keras.callbacks import EarlyStopping
+
+
 #from keras.utils.visualize_util import plot
 #import pydot
 #import graphviz
@@ -140,7 +143,6 @@ class Forecast:
 		self.basic_vis()
 		self.pre_process_data() #v1.x-ish: scaling, PCA, etc
 		self.svm() # uses self.company.X_train/test, etc
-		exit()
 		self.ann() # uses self.company.X_train/test, etc
 		# self.ensemble()  # v1.x
 		self.svm_decisions, self.svm_gain_loss = self.decisions(self.svm_preds) # this has to ouptut // generate a notion of "shares held"
@@ -193,16 +195,16 @@ class Forecast:
 		
 	def svm(self):
 		# for regression problems, scikitlearn uses SVR: support vector regression
-		C_range = np.logspace(-2, 10, 12) # normally 12
+		C_range = np.logspace(-2, 10, 10) # normally 12; doing 10 for now due to run-time length
 		#print C_range
-		gamma_range = np.logspace(-9, 3, 12)  # normally 12
+		gamma_range = np.logspace(-9, 3, 10)  # normally 12; doing 10 for now due to run-time length
 		#print gamma_range
 		param_grid = dict(gamma=gamma_range, C=C_range)
 		# based on LONG test with the gridsearch (see notes) for v4b-5
 		# below is rounded numbers
 		#param_grid = dict(C=[432876], gamma=[1.8738])
 		## probably want to introduce max iterations...
-		grid = GridSearchCV(svm.SVR(kernel='rbf', verbose=True), param_grid=param_grid, cv=2)
+		grid = GridSearchCV(svm.SVR(kernel='rbf', verbose=True), param_grid=param_grid, cv=2, scoring = 'mean_squared_error')
 		grid.fit(self.X_train, self.y_train)
 
 		print("The best parameters are %s with a score of %0.2f"
@@ -218,13 +220,11 @@ class Forecast:
 		
 		#print self.svm_preds
 		
-		self.reg_score = grid.score(self.company.X_cv, self.company.y_cv)
-		#self.reg_score = mean_absolute_error(self.company.y_valid, self.svm_preds)
-		print self.reg_score
-
+		self.svm_mse = grid.score(self.company.X_cv, self.company.y_cv)
+		print "Mean Squared Error: %f" % self.svm_mse
+		
 		# save the parameters to a file
 		joblib.dump(grid.best_estimator_,  self.company.fin_dir + '/svm-models/' + self.company.experiment_version +'_svm_model.pkl')
-
 		
 		# visualize results 
 		plt.figure()
@@ -262,11 +262,17 @@ class Forecast:
 
 		sgd = SGD(lr=0.3, decay=1e-6, momentum=0.9, nesterov=True)
 		model.compile(loss='mean_squared_error', optimizer='rmsprop')
-		early_stopping = EarlyStopping(monitor='val_loss', patience=70)
+		early_stopping = EarlyStopping(monitor='val_loss', patience=110)
 
 		model.fit(self.company.X_train, self.company.y_train, nb_epoch=1000, validation_split=.1, batch_size=16, verbose = 1, show_accuracy = True, shuffle = False, callbacks=[early_stopping])
-		score = model.evaluate(self.company.X_cv.values, self.company.y_cv, show_accuracy=True, batch_size=16)
+		self.ann_mse = model.evaluate(self.company.X_cv.values, self.company.y_cv, show_accuracy=True, batch_size=16)
+		print self.ann_mse
 		self.ann_preds = model.predict(self.company.X_test)
+
+		yaml_string = model.to_yaml()
+		with open(self.company.fin_dir + '/ann-models/' + self.company.experiment_version +'_ann_model.yml', 'w+') as outfile:
+			outfile.write( yaml.dump(yaml_string, default_flow_style=True) )
+		#model.save_weights(self.company.fin_dir + '/ann-models/' + self.company.experiment_version +'_ann_weights')
 		"""
 		nb_features = self.company.X_train.shape[1]
 		X_train = self.company.X_train.reshape(self.company.X_train.shape + (1, ))
@@ -388,8 +394,8 @@ class Forecast:
 		# for now just a single line
 		
 		columns = ["Profit/Loss"]
-		index = ["BUY-HOLD", "SVM", "ANN"]
-		self.profit_df = [self.bh_pl, np.sum(self.svm_gain_loss), np.sum(self.ann_gain_loss)]
+		index = ["BUY-HOLD", "SVM", "ANN", "SVM-MSE", "ANN-MSE"]
+		self.profit_df = [self.bh_pl, np.sum(self.svm_gain_loss), np.sum(self.ann_gain_loss), self.svm_mse, self.ann_mse]
 		self.profit_df = pd.DataFrame(self.profit_df, index=index, columns=columns)
 		print "Buy & Hold profit/loss %r" % self.bh_pl
 		#print self.svm_decisions
