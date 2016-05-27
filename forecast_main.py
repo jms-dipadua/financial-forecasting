@@ -159,8 +159,10 @@ class Forecast:
 
 		#  SCALE input values ...not sure if i should do the target...
 		scaler = StandardScaler()
-		self.X_train = scaler.fit_transform(self.company.X_train)
-		self.X_test = scaler.fit_transform(self.company.X_test)
+		self.daily_highs = self.company.X_test['High']
+		self.daily_lows = self.company.X_test['Low']
+		self.company.X_train = scaler.fit_transform(self.company.X_train)
+		self.company.X_test = scaler.fit_transform(self.company.X_test)
 
 		# make true train and CV split
 		self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(self.company.X_train, self.company.y_train, test_size=0.33, random_state=42)
@@ -186,9 +188,9 @@ class Forecast:
 		
 	def svm(self):
 		# for regression problems, scikitlearn uses SVR: support vector regression
-		C_range = np.logspace(-2, 10, 1) # normally 12
+		C_range = np.logspace(-2, 10, 12) # normally 12
 		#print C_range
-		gamma_range = np.logspace(-9, 3, 1)  # normally 12
+		gamma_range = np.logspace(-9, 3, 12)  # normally 12
 		#print gamma_range
 		param_grid = dict(gamma=gamma_range, C=C_range)
 		# based on LONG test with the gridsearch (see notes) for v4b-5
@@ -278,8 +280,6 @@ class Forecast:
 		decisions = []
 		gain_loss = []
 		num_preds = predictions.shape[0]
-		day_highs = round(self.company.X_test['High'],3)
-		day_low = round(self.company.X_test['Low'],3)
 
 		#print "total number of predictions: %f"  % num_preds
 		#print "shape of y_test: %f  "  % self.company.y_test.shape
@@ -290,9 +290,8 @@ class Forecast:
 			# SETUP
 			# the actual close value
 			actual_close = round(self.company.y_test[i],3)
-			day_high = day_highs[i]
-			day_low = day_lows[i]
-			
+			day_high = self.daily_highs.iloc[i]
+			day_low = self.daily_lows.iloc[i]
 			# the previous close, pulled from y_train (for first row of x) and y_test
 			if i == 0:
 				prv_close = round(self.company.y_train[-1],3)
@@ -385,7 +384,7 @@ class Forecast:
 		self.final_df['Date'] = self.company.y_dates
 		
 		final_file = self.final_df.to_csv(self.company.fin_file_name,index_label='id')
-		#pl_fin_file = self.profit_df.to_csv(self.company.pl_file_name)
+		pl_fin_file = self.profit_df.to_csv(self.company.pl_file_name, index=True)
 		return
 
 if __name__ == "__main__":
