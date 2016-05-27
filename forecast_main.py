@@ -4,7 +4,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 import yaml
-import h5py
+#import h5py
 
 from sklearn import svm
 from sklearn.metrics import f1_score, accuracy_score, mean_absolute_error, mean_squared_error
@@ -195,9 +195,9 @@ class Forecast:
 		
 	def svm(self):
 		# for regression problems, scikitlearn uses SVR: support vector regression
-		C_range = np.logspace(-2, 10, 1) # normally 12; doing 10 for now due to run-time length
+		C_range = np.logspace(-2, 10, 10) # normally 12; doing 10 for now due to run-time length
 		#print C_range
-		gamma_range = np.logspace(-9, 3, 1)  # normally 12; doing 10 for now due to run-time length
+		gamma_range = np.logspace(-9, 3, 10)  # normally 12; doing 10 for now due to run-time length
 		#print gamma_range
 		param_grid = dict(gamma=gamma_range, C=C_range)
 		# based on LONG test with the gridsearch (see notes) for v4b-5
@@ -264,7 +264,7 @@ class Forecast:
 		model.compile(loss='mean_squared_error', optimizer='rmsprop')
 		early_stopping = EarlyStopping(monitor='val_loss', patience=110)
 
-		model.fit(self.company.X_train, self.company.y_train, nb_epoch=10, validation_split=.1, batch_size=16, verbose = 1, show_accuracy = True, shuffle = False, callbacks=[early_stopping])
+		model.fit(self.company.X_train, self.company.y_train, nb_epoch=1000, validation_split=.1, batch_size=16, verbose = 1, show_accuracy = True, shuffle = False, callbacks=[early_stopping])
 		self.ann_mse = model.evaluate(self.company.X_cv.values, self.company.y_cv, show_accuracy=True, batch_size=16)
 		print self.ann_mse
 		self.ann_preds = model.predict(self.company.X_test)
