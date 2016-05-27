@@ -257,9 +257,7 @@ class Forecast:
 		sgd = SGD(lr=0.3, decay=1e-6, momentum=0.9, nesterov=True)
 		model.compile(loss='mean_squared_error', optimizer='rmsprop')
 		early_stopping = EarlyStopping(monitor='val_loss', patience=70)
-		#epoch_score = model.evaluate(X_score, y_score, batch_size = 16) # this doesn't work
-		# first model
-		print "fitting first model"
+		
 		model.fit(self.company.X_train, self.company.y_train, nb_epoch=1000, validation_split=.1, batch_size=16, verbose = 1, show_accuracy = True, shuffle = False, callbacks=[early_stopping])
 		score = model.evaluate(self.company.X_cv.values, self.company.y_cv, show_accuracy=True, batch_size=16)
 		self.ann_preds = model.predict(self.company.X_test)
