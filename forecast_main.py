@@ -46,6 +46,8 @@ class Company:
 		self.raw_data = pd.read_csv(self.root_dir+self.base_file)
 
 	def initial_data_drop(self):
+		self.raw_data2 = self.raw_data
+
 		print "initial_data_drop (IDs & Dates)"
 		columns = list(self.raw_data.columns.values)
 		if 'id' in columns:
@@ -97,9 +99,10 @@ class Company:
 		# get rid of any NaN that may have appeared in there
 		self.raw_data.replace(to_replace = np.nan, value = 0, inplace=True)		
 		X_train = self.raw_data.ix[0:train_len-1, :]  # one less than train_len; train_len will be start of test
+		X_train2 = self.raw_data2.ix[0:train_len-1, :]
 		# last row of data set won't have a prior-day but that's okay, we can just drop it (since there's no way to validate it)
 		X_test =  self.raw_data.ix[train_len:data_shape-2, :] # ones less than data_shape because of 0-index + row dropping
-
+		X_test2 = self.raw_data2.ix[train_len:data_shape-2, :]
 		# generate / extract y_vals : y_train & y_valid
 		# first row has no prior-day information but day 2 is its y-val
 		y_vals_raw = self.raw_data.loc[:,['Close']]
@@ -114,6 +117,7 @@ class Company:
 		#y_valid = y_valid.iloc[0:y_valid.shape[0]-1] # as above. awkward. 
 		
 		self.X_train = X_train
+		self.X_train2 = X_train2
 		# also do checks on head / tail   
 		# to test head, swap head for tail
 		# commented out when not testing
@@ -121,6 +125,7 @@ class Company:
 		self.y_train = y_train.as_matrix() # make sure they're matrix/vectors
 		#print self.y_train[-5:-1]
 		self.X_test = X_test
+		self.X_test2 = X_test2
 		#print self.X_test.tail(5)
 		self.y_test = y_test.as_matrix()
 		#print self.y_valid[-1]
@@ -128,7 +133,7 @@ class Company:
 
 		# last step is to generate a cross-validation set
 		# since we're in time series, we can't randomize (hence this process and not sci-kit...)
-		# we'll dedicate 70% of data set to train, 30% to cross-validation
+		# we'll dedicate 90% of data set to train, 10% to cross-validation
 		data_shape = self.X_train.shape[0]
 		train_len = int(round(data_shape * .9))
 		X_train = self.X_train[0: train_len - 1]
@@ -174,10 +179,10 @@ class Forecast:
 		self.daily_lows = self.company.X_test['Low']
 		self.company.X_train = scaler.fit_transform(self.company.X_train)
 		self.company.X_test = scaler.fit_transform(self.company.X_test)
+		self.company.X_cv = scaler.fit_transform(self.company.X_cv)
 
 		# make true train and CV split
-		self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(self.company.X_train, self.company.y_train, test_size=0.33, random_state=42)
-
+		#self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(self.company.X_train, self.company.y_train, test_size=0.33, random_state=42)
 		return
 
 	def basic_vis(self):
@@ -201,9 +206,9 @@ class Forecast:
 		
 	def svm(self):
 		# for regression problems, scikitlearn uses SVR: support vector regression
-		C_range = np.logspace(-2, 10, 10) # normally 12; doing 10 for now due to run-time length
+		C_range = np.logspace(-2, 10, 1) # normally 12; doing 10 for now due to run-time length
 		#print C_range
-		gamma_range = np.logspace(-9, 3, 10)  # normally 12; doing 10 for now due to run-time length
+		gamma_range = np.logspace(-9, 3, 1)  # normally 12; doing 10 for now due to run-time length
 		#print gamma_range
 		param_grid = dict(gamma=gamma_range, C=C_range)
 		# based on LONG test with the gridsearch (see notes) for v4b-5
@@ -211,7 +216,7 @@ class Forecast:
 		#param_grid = dict(C=[432876], gamma=[1.8738])
 		## probably want to introduce max iterations...
 		grid = GridSearchCV(svm.SVR(kernel='rbf', verbose=True), param_grid=param_grid, cv=2, scoring = 'mean_squared_error')
-		grid.fit(self.X_train, self.y_train)
+		grid.fit(self.company.X_train, self.company.y_train)
 
 		print("The best parameters are %s with a score of %0.2f"
 			% (grid.best_params_, grid.best_score_))
@@ -226,8 +231,10 @@ class Forecast:
 		
 		#print self.svm_preds
 		
-		self.svm_mse = grid.score(self.company.X_cv, self.company.y_cv)
-		print "Mean Squared Error: %f" % self.svm_mse
+		self.svm_mse_cv = grid.score(self.company.X_cv, self.company.y_cv)
+		print "(cv) Mean Squared Error: %f" % self.svm_mse_cv
+		self.svm_mse_test = grid.score(self.company.X_cv, self.company.y_cv)
+		print "(test) Mean Squared Error: %f" % self.svm_mse_test
 		
 		# save the parameters to a file
 		joblib.dump(grid.best_estimator_,  self.company.fin_dir + '/svm-models/' + self.company.experiment_version +'_svm_model.pkl')
@@ -238,7 +245,7 @@ class Forecast:
 		plt.xlabel("Training examples")
 		plt.ylabel("Score")
 		train_sizes, train_scores, test_scores = learning_curve(
-			grid.best_estimator_, self.X_train, self.y_train, cv=5, train_sizes=[50, 100, 200, 300, 400, 500, 600])
+			grid.best_estimator_, self.company.X_train, self.company.y_train, cv=5, train_sizes=[50, 100, 200, 300, 400, 500, 600])
 		train_scores_mean = np.mean(train_scores, axis=1)
 		train_scores_std = np.std(train_scores, axis=1)
 		test_scores_mean = np.mean(test_scores, axis=1)
@@ -270,7 +277,7 @@ class Forecast:
 		model.compile(loss='mean_squared_error', optimizer='rmsprop')
 		early_stopping = EarlyStopping(monitor='val_loss', patience=110)
 
-		model.fit(self.company.X_train, self.company.y_train, nb_epoch=1000, validation_split=.1, batch_size=16, verbose = 1, show_accuracy = True, shuffle = False, callbacks=[early_stopping])
+		model.fit(self.company.X_train, self.company.y_train, nb_epoch=10, validation_split=.1, batch_size=16, verbose = 1, show_accuracy = True, shuffle = False, callbacks=[early_stopping])
 		self.ann_mse = model.evaluate(self.company.X_cv.values, self.company.y_cv, show_accuracy=True, batch_size=16)
 		print self.ann_mse
 		self.ann_preds = model.predict(self.company.X_test)
@@ -400,8 +407,8 @@ class Forecast:
 		# for now just a single line
 		
 		columns = ["Profit/Loss"]
-		index = ["BUY-HOLD", "SVM", "ANN", "SVM-MSE", "ANN-MSE"]
-		self.profit_df = [self.bh_pl, np.sum(self.svm_gain_loss), np.sum(self.ann_gain_loss), self.svm_mse, self.ann_mse]
+		index = ["BUY-HOLD", "SVM", "ANN", "SVM-MSE-CV", "SVM-MSE-TEST", "ANN-MSE"]
+		self.profit_df = [self.bh_pl, np.sum(self.svm_gain_loss), np.sum(self.ann_gain_loss), self.svm_mse_cv, self.svm_mse_test, self.ann_mse]
 		self.profit_df = pd.DataFrame(self.profit_df, index=index, columns=columns)
 		print "Buy & Hold profit/loss %r" % self.bh_pl
 		#print self.svm_decisions
