@@ -435,8 +435,8 @@ class Forecast:
 		self.final_df = np.vstack((self.company.y_test, self.svm_preds))
 		self.final_df = np.transpose(self.final_df)
 		self.final_df = np.hstack((self.final_df, self.ann_preds))
-		print self.final_df.shape
-		print np.array( [self.svm_decisions] ).shape
+		#print self.final_df.shape
+		#print np.array( [self.svm_decisions] ).shape
 		self.final_df = np.hstack((self.final_df, np.transpose(np.array( [self.svm_decisions] ))  ))
 		self.final_df = np.hstack((self.final_df, np.transpose(np.array( [self.ann_decisions] ))  ))
 		self.final_df = pd.DataFrame(self.final_df, columns=columns)
