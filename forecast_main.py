@@ -358,6 +358,13 @@ class Forecast:
 				prv_close = round(self.company.y_test[i-1],3)
 			#print "%r ::   %r"  % (prv_close, predictions[i])
 
+			# *have* to liquidate on the last day	
+			if (i == num_preds -1) and (self.shares_held > 0): 
+				sell_price = (day_high + day_low) / 2 # mean of prv & actual..."market-ish price"
+				gain_loss.append(sell_price * self.shares_held - self.buy_price * self.shares_held )
+				decisions.append("final_day_liquidation")
+				break 
+
 			# ACTUAL DECISIONS 
 			# buy
 			if predictions[i] > prv_close and self.shares_held == 0:
@@ -392,11 +399,6 @@ class Forecast:
 					decisions.append("Hold")
 			else:
 				decisions.append("Hold")	
-			# *have* to liquidate on the last day	
-			if (i == num_preds) and (self.shares_held > 0): 
-				sell_price = (day_high + day_low) / 2 # mean of prv & actual..."market-ish price"
-				gain_loss.append(sell_price * self.shares_held - self.buy_price * self.shares_held )
-				decisions.append("final_day_liquidation")
 		
 		#print decisions
 
