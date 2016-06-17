@@ -80,11 +80,11 @@ class Company:
 		print drop_col_nums
 		"""
 		# v5-1
-		drop_cols = ['DGS10', 'DCOILBRENTEU', 'xCIVPART', 'UNRATE', 'CPIAUCSL', 'GFDEGDQ188S', 'HOUST', 'IC4WSA', 'USD3MTD156N', 'PCE', 'PSAVERT', 'xA191RL1Q225SBEA', 'spClose', 'DEXUSEU', 'EPS', '12mo-EPS', 'net_income', 'total_assets', 'total_revenue', 'free_cash_flow', 'total_liabilities', 'profit_margin']
-		drop_col_nums = [14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35]
+		#drop_cols = ['DGS10', 'DCOILBRENTEU', 'xCIVPART', 'UNRATE', 'CPIAUCSL', 'GFDEGDQ188S', 'HOUST', 'IC4WSA', 'USD3MTD156N', 'PCE', 'PSAVERT', 'xA191RL1Q225SBEA', 'spClose', 'DEXUSEU', 'EPS', '12mo-EPS', 'net_income', 'total_assets', 'total_revenue', 'free_cash_flow', 'total_liabilities', 'profit_margin']
+		#drop_col_nums = [14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35]
 		# v5-2
-		#drop_cols = ['Open', 'High', 'Low', 'SMA-5', 'SMA-15', 'SMA-50', 'SMA-200', 'WMA-10', 'WMA-30', 'WMA-100', 'WMA-200', 'cci-20', 'rsi-14', 'PE']
-		#drop_col_nums = [0, 1, 2, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 36]
+		drop_cols = ['Open', 'High', 'Low', 'Close', 'SMA-5', 'SMA-15', 'SMA-50', 'SMA-200', 'WMA-10', 'WMA-30', 'WMA-100', 'WMA-200', 'cci-20', 'rsi-14']
+		drop_col_nums = [0, 1, 2, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
 		self.raw_data.drop(self.raw_data.columns[drop_col_nums], axis = 1, inplace=True)
 		
 		# v5-3 ("all params")
