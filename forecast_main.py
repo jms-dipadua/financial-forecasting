@@ -368,9 +368,9 @@ class Forecast:
 				#print "actual close: %r   ::  predicted close: %r    ::   previous close: %r " % (actual_close, predictions[i], prv_close)
 				decisions.append("purchase")
 			# sells (stop loss)
-			elif self.buy_price < prv_close and self.shares_held > 0:
+			elif self.buy_price > prv_close and self.shares_held > 0:
 				# stop loss check; if not > 3% loss, then no change
-				if (self.shares_held * self.buy_price) / (prv_close * self.shares_held) < .97:
+				if (self.buy_price / prv_close) < .97:
 					sell_price = (day_high + day_low) / 2 # mean of prv & actual..."market-ish price"
 					gain_loss.append(sell_price * self.shares_held - self.buy_price * self.shares_held)
 					# reset holdings
@@ -381,9 +381,9 @@ class Forecast:
 					decisions.append("Hold")
 					pass 
 			# sells (stop gain)
-			elif self.buy_price > prv_close and self.shares_held >0:
+			elif self.buy_price < prv_close and self.shares_held >0:
 				# stop gain check; if not > 10% gain, then no change
-				if ((self.shares_held * self.buy_price) / (prv_close * self.shares_held) -1) > .1:
+				if (self.buy_price / prv_close) > 1.09:
 					sell_price = (day_high + day_low) / 2 # mean of prv & actual..."market-ish price"
 					gain_loss.append(sell_price * self.shares_held - self.buy_price * self.shares_held )
 					self.shares_held = 0
