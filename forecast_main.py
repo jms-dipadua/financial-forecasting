@@ -322,7 +322,7 @@ class Forecast:
 		model.fit(X_train, self.company.y_train, nb_epoch=50, validation_split=0.25, verbose = 1, callbacks=[early_stopping])
 		self.ann_preds = model.predict(X_test)
 		"""
-		print self.ann_preds
+		#print self.ann_preds
 		#print "Trained ANN Score: %r" % score
 		# visualize
 		#plot(model, to_file= '/ann-training/' + self.company.fin_file_name + '.png')
@@ -368,9 +368,9 @@ class Forecast:
 				#print "actual close: %r   ::  predicted close: %r    ::   previous close: %r " % (actual_close, predictions[i], prv_close)
 				decisions.append("purchase")
 			# sells (stop loss)
-			elif self.buy_price > prv_close and self.shares_held > 0:
+			elif (self.buy_price > prv_close) and (self.shares_held > 0):
 				# stop loss check; if not > 3% loss, then no change
-				if (self.buy_price / prv_close) < .97:
+				if (prv_close / self.buy_price) < .97:
 					sell_price = (day_high + day_low) / 2 # mean of prv & actual..."market-ish price"
 					gain_loss.append(sell_price * self.shares_held - self.buy_price * self.shares_held)
 					# reset holdings
@@ -378,12 +378,11 @@ class Forecast:
 					self.buy_price = 0
 					decisions.append("stop_loss_sell")
 				else: # could do dollar cost averaging here (if wanted to get fancy)
-					decisions.append("Hold")
-					pass 
+					decisions.append("Hold") 
 			# sells (stop gain)
-			elif self.buy_price < prv_close and self.shares_held >0:
+			elif (self.buy_price < prv_close) and (self.shares_held > 0):
 				# stop gain check; if not > 10% gain, then no change
-				if (self.buy_price / prv_close) > 1.09:
+				if (prv_close / self.buy_price) > 1.09:
 					sell_price = (day_high + day_low) / 2 # mean of prv & actual..."market-ish price"
 					gain_loss.append(sell_price * self.shares_held - self.buy_price * self.shares_held )
 					self.shares_held = 0
@@ -391,11 +390,10 @@ class Forecast:
 					decisions.append("stop_gain_sell")
 				else:
 					decisions.append("Hold")
-					pass
 			else:
 				decisions.append("Hold")	
 			# *have* to liquidate on the last day	
-			if i == num_preds -1 and self.shares_held > 0: 
+			if (i == num_preds) and (self.shares_held > 0): 
 				sell_price = (day_high + day_low) / 2 # mean of prv & actual..."market-ish price"
 				gain_loss.append(sell_price * self.shares_held - self.buy_price * self.shares_held )
 				decisions.append("final_day_liquidation")
@@ -437,6 +435,8 @@ class Forecast:
 		self.final_df = np.vstack((self.company.y_test, self.svm_preds))
 		self.final_df = np.transpose(self.final_df)
 		self.final_df = np.hstack((self.final_df, self.ann_preds))
+		print self.final_df.shape
+		print np.array( [self.svm_decisions] ).shape
 		self.final_df = np.hstack((self.final_df, np.transpose(np.array( [self.svm_decisions] ))  ))
 		self.final_df = np.hstack((self.final_df, np.transpose(np.array( [self.ann_decisions] ))  ))
 		self.final_df = pd.DataFrame(self.final_df, columns=columns)
