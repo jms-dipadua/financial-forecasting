@@ -206,9 +206,9 @@ class Forecast:
 		
 	def svm(self):
 		# for regression problems, scikitlearn uses SVR: support vector regression
-		C_range = np.logspace(-2, 10, 10) # normally 12; doing 10 for now due to run-time length
+		C_range = np.logspace(0, 4, 5) # normally 12; doing 10 for now due to run-time length
 		#print C_range
-		gamma_range = np.logspace(-9, 3, 10)  # normally 12; doing 10 for now due to run-time length
+		gamma_range = np.logspace(-5, 1, 5)  # normally 12; doing 10 for now due to run-time length
 		#print gamma_range
 		param_grid = dict(gamma=gamma_range, C=C_range)
 		# based on LONG test with the gridsearch (see notes) for v4b-5
