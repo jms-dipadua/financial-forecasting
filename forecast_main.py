@@ -188,6 +188,7 @@ class Forecast:
 		return
 
 	def basic_vis(self):
+		# TODO :: shift so that its not a correlation with the OPEN but with the CLOSE (since that's the dependent var)
 		correlations = self.company.X_train.corr() # uses pandas built in correlation 
 		# Generate a mask for the upper triangle (cuz it's just distracting)
 		mask = np.zeros_like(correlations, dtype=np.bool)

@@ -95,7 +95,7 @@ class Company:
 		print "generating x_train, y_train, x_test"
 		data_shape = self.raw_data.shape[0]
 		print "data_shape of raw_data:  %r"  % data_shape
-		train_len = int(round(data_shape * .9)) # get 90% of data for train
+		train_len = int(round(data_shape * .9)) # get 90% of data for train (everything but 2015)
 		print "train_len of raw_data:  %r"  % train_len
 		
 		# get rid of any NaN that may have appeared in there
@@ -114,9 +114,9 @@ class Company:
 		y_vals_labels = np.zeros(y_vals_raw.shape)
 		for i in range(1:y_vals_lables.shape[0]): # skip 0 because we don't need it
 			if y_vals_raw.ix[i] > y_vals_raw.ix[i-1]:
-				y_vals_labels[,i] = 'up'
+				y_vals_labels[,i] = 1  # 1 ==  "up [day]" -- so a boolean on whether it's an up-day or not...
 			else:
-				y_vals_labels[,i] = 'down'
+				y_vals_labels[,i] = 0  # 0 == "down [day]"
 
 		# zero indexing takes care of needing to manipulate by one here
 		# drop first day because need "day +1" close price as the "train target" based on "day's feature inputs"
@@ -199,7 +199,9 @@ class Forecast:
 		mask[np.triu_indices_from(mask)] = True
 		# Set up the matplotlib figure
 		f, ax = plt.subplots(figsize=(11, 9))
-		plt.title("Feature Correlations")
+		# need company ticker for title
+		ticker = self.company.base_file.split('-').[0]
+		plt.title("Feature Correlations:  " + ticker)
 		# Generate a custom diverging colormap
 		cmap = sns.diverging_palette(220, 10, as_cmap=True)
 
@@ -213,16 +215,16 @@ class Forecast:
 		
 	def svm(self):
 		# for regression problems, scikitlearn uses SVR: support vector regression
-		C_range = np.logspace(0, 4, 6) # normally 12; doing 10 for now due to run-time length
+		C_range = np.logspace(0, 4, 6) # normally 12; doing 6 for now due to run-time length
 		#print C_range
-		gamma_range = np.logspace(-5, 1, 6)  # normally 12; doing 10 for now due to run-time length
+		gamma_range = np.logspace(-5, 1, 6)  # normally 12; doing 6 for now due to run-time length
 		#print gamma_range
 		param_grid = dict(gamma=gamma_range, C=C_range)
 		# based on LONG test with the gridsearch (see notes) for v4b-5
 		# below is rounded numbers
 		#param_grid = dict(C=[432876], gamma=[1.8738])
 		## probably want to introduce max iterations...
-		grid = GridSearchCV(svm.SVR(kernel='rbf', verbose=True), param_grid=param_grid, cv=2, scoring = 'mean_squared_error')
+		grid = GridSearchCV(svm.SVM(kernel='rbf', verbose=True), param_grid=param_grid, cv=2, scoring = 'mean_squared_error')
 		grid.fit(self.company.X_train, self.company.y_train)
 
 		print("The best parameters are %s with a score of %0.2f"
@@ -278,7 +280,7 @@ class Forecast:
 		model.add(Activation('tanh'))
 		#model.add(Dropout(0.5))
 		model.add(Dense(input_dim=10, output_dim=1, init="glorot_uniform"))
-		model.add(Activation("linear"))
+		model.add(Activation("tanh"))
 
 		sgd = SGD(lr=0.3, decay=1e-6, momentum=0.9, nesterov=True)
 		model.compile(loss='mean_squared_error', optimizer='rmsprop')
