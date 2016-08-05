@@ -100,9 +100,6 @@ class Company:
 		
 		# get rid of any NaN that may have appeared in there
 		self.raw_data.replace(to_replace = np.nan, value = 0, inplace=True)		
-		## TODO
-		## NEED TO MAKE SURE THERE ISN'T A LEAK -- IS THE DAY'S CLOSE INCLUDED IN THE TRAINING / TESTING SET? 
-		## IS IT APPRORPRIATELY OFFSET -- IT LOOKS LIKE IT ISN'T!!
 
 		X_train = self.raw_data.ix[0:train_len-1, :]  # one less than train_len; train_len will be start of test
 		X_train2 = self.raw_data2.ix[0:train_len-1, :]
